@@ -33,7 +33,7 @@ impl Map {
             width: w,
             height: h,
             tiles: vec![TileClass::Floor; (w*h) as usize],
-            visible: vec![true; (w*h) as usize], //TODO: Change from all true when implementing FOV
+            visible: vec![false; (w*h) as usize],
             revealed: vec![false; (w*h) as usize]
         }
     }

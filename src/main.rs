@@ -5,6 +5,7 @@ mod object;
 mod map;
 mod camera;
 mod spawn;
+mod systems;
 
 pub mod prelude {
     pub const CONSOLE_W: i32 = 80;
@@ -17,6 +18,7 @@ pub mod prelude {
     pub use crate::map::*;
     pub use crate::camera::*;
     pub use crate::spawn::*;
+    pub use crate::systems::*;
 }
 use crate::prelude::*;
 

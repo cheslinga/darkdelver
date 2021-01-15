@@ -44,6 +44,7 @@ fn try_move(gs: &mut State, delta: Point) {
     if map.walkable(dest.x, dest.y) {
         player.pos = Some(dest);
         camera.move_camera(dest);
-        //player.viewshed.refresh = true;
+        player.viewshed.as_mut().unwrap().refresh = true;
     }
+    gs.refresh_con = true;
 }
