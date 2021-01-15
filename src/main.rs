@@ -33,7 +33,7 @@ fn build_console(w: i32, h: i32) -> BTerm {
     return BTermBuilder::new()
         .with_resource_path("res/")
         .with_font("font.png",16,16)
-        .with_title("Citadel of Narthak")
+        .with_title("Darkdelver")
 
         .with_tile_dimensions(16,16)
         .with_dimensions(w/16, h/16)
