@@ -1,9 +1,6 @@
 use crate::prelude::*;
 
-pub fn process_fov(worldrefs: (&mut Vec<Object>, &mut Map)) {
-    let objects = worldrefs.0;
-    let map = worldrefs.1;
-
+pub fn process_fov(objects: &mut Vec<Object>, map: &mut Map) {
     for obj in objects.iter_mut() {
         let view = &mut obj.viewshed.as_mut().unwrap();
         let pos = &obj.pos.unwrap();

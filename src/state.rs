@@ -57,7 +57,5 @@ impl World {
 }
 
 fn exec_all_systems(gs: &mut State) {
-    process_fov(
-        (&mut gs.world.objects, &mut gs.world.active_map)
-    );
+    process_fov(&mut gs.world.objects, &mut gs.world.active_map);
 }
