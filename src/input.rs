@@ -7,6 +7,13 @@ pub enum Actions {
 
 //Grabs the player's keypresses
 pub fn player_input(gs: &mut State, con: &BTerm) {
+    match gs.con_status {
+        ContextStatus::InGame => ingame_input(gs, con),
+        ContextStatus::MainMenu | ContextStatus::PauseMenu => menu_input(gs, con)
+    }
+}
+
+fn ingame_input(gs: &mut State, con: &BTerm) {
     if let Some(key) = con.key {
         match key {
             VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H
@@ -26,8 +33,31 @@ pub fn player_input(gs: &mut State, con: &BTerm) {
                 => process_action(gs, Actions::MoveDownLeft),
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N
                 => process_action(gs, Actions::MoveDownRight),
+
+            VirtualKeyCode::Escape
+                => {
+                    gs.menu = Some(Menu::pause_menu());
+                    gs.con_status = ContextStatus::PauseMenu;
+                    gs.refresh_con = true;
+                },
+
             _ => {}
         }
+    }
+}
+
+fn menu_input(gs: &mut State, con: &BTerm) {
+    if let Some(key) = con.key {
+        match key {
+            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::J
+                => gs.menu.as_mut().unwrap().cycle_selection_up(),
+            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::K
+                => gs.menu.as_mut().unwrap().cycle_selection_down(),
+            VirtualKeyCode::Return
+                => gs.menu.as_mut().unwrap().process_selection(),
+            _ => {}
+        }
+        gs.refresh_con = true;
     }
 }
 

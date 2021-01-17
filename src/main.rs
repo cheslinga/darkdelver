@@ -3,6 +3,7 @@ mod input;
 mod render;
 mod object;
 mod map;
+mod menus;
 mod camera;
 mod spawn;
 mod systems;
@@ -16,6 +17,7 @@ pub mod prelude {
     pub use crate::render::*;
     pub use crate::object::*;
     pub use crate::map::*;
+    pub use crate::menus::*;
     pub use crate::camera::*;
     pub use crate::spawn::*;
     pub use crate::systems::*;
@@ -23,7 +25,7 @@ pub mod prelude {
 use crate::prelude::*;
 
 fn main() {
-    match main_loop(build_console(1280,720), State::init()) {
+    match main_loop(build_console(1024,768), State::init()) {
         Ok(_) => {},
         Err(e) => panic!("Could not initialize due to a fatal error:\n{}", e)
     }
