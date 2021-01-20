@@ -55,6 +55,8 @@ fn menu_input(gs: &mut State, con: &BTerm) {
                 => gs.menu.as_mut().unwrap().cycle_selection_down(),
             VirtualKeyCode::Return
                 => gs.menu.as_mut().unwrap().process_selection(),
+            VirtualKeyCode::Escape
+                => gs.con_status = ContextStatus::InGame,
             _ => {}
         }
         gs.refresh_con = true;

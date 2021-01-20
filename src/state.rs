@@ -70,8 +70,8 @@ impl GameState for State {
                     con.cls();
 
                     match self.con_status {
-                        ContextStatus::MainMenu => batch_main_menu(self),
-                        ContextStatus::PauseMenu => batch_pause_menu(self),
+                        ContextStatus::MainMenu => batch_main_menu(self.menu.as_ref().unwrap()),
+                        ContextStatus::PauseMenu => batch_pause_menu(self.menu.as_ref().unwrap()),
                         _ => {}
                     }
 
