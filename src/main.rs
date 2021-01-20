@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 mod state;
 mod input;
 mod render;
