@@ -1,6 +1,7 @@
 use bracket_lib::prelude::*;
+use serde::{Serialize,Deserialize};
 
-#[derive(Clone,Copy,PartialEq)]
+#[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
 pub enum TileClass {
     Wall,
     Floor
@@ -20,6 +21,7 @@ impl TileClass {
     }
 }
 
+#[derive(Serialize,Deserialize)]
 pub struct Map {
     pub width: i32,
     pub height: i32,

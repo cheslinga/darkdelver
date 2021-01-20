@@ -1,5 +1,7 @@
 use crate::prelude::*;
+use serde::{Serialize,Deserialize};
 
+#[derive(Serialize,Deserialize)]
 pub struct Camera {
     pub min_x: i32,
     pub max_x: i32,

@@ -1,6 +1,7 @@
 use crate::prelude::*;
+use serde::{Serialize,Deserialize};
 
-#[derive(Default)]
+#[derive(Default,Serialize,Deserialize)]
 pub struct Object {
     pub name: Option<String>,
     pub tag: Option<ActorTag>,
@@ -15,6 +16,7 @@ impl Object {
 }
 
 //Component Definitions:
+#[derive(Serialize,Deserialize)]
 pub enum ActorTag {
     None,
     Static,
@@ -23,11 +25,13 @@ pub enum ActorTag {
 }
 impl Default for ActorTag { fn default() -> Self { ActorTag::None } }
 
+#[derive(Serialize,Deserialize)]
 pub struct Render {
     pub glyph: FontCharType,
     pub color: ColorPair
 }
 
+#[derive(Serialize,Deserialize)]
 pub struct Viewshed {
     pub range: i32,
     pub visible: Vec<Point>,

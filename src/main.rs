@@ -5,6 +5,7 @@ mod object;
 mod map;
 mod menus;
 mod camera;
+mod saves;
 mod spawn;
 mod systems;
 
@@ -19,6 +20,7 @@ pub mod prelude {
     pub use crate::map::*;
     pub use crate::menus::*;
     pub use crate::camera::*;
+    pub use crate::saves::*;
     pub use crate::spawn::*;
     pub use crate::systems::*;
 }

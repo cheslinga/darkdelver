@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use serde::{Serialize, Deserialize};
 
 #[derive(PartialEq)]
 pub enum ContextStatus{ InGame, MainMenu, PauseMenu }
@@ -28,8 +29,16 @@ impl State {
                     self.con_status = ContextStatus::InGame;
                     self.refresh_con = true;
                 },
-                MenuSelection::SaveGame => {},
-                MenuSelection::LoadGame => {},
+                MenuSelection::SaveGame => {
+                    export_world(&self.world);
+                    self.con_status = ContextStatus::InGame;
+                    self.refresh_con = true;
+                },
+                MenuSelection::LoadGame => {
+                    load_world(self);
+                    self.con_status = ContextStatus::InGame;
+                    self.refresh_con = true;
+                },
                 MenuSelection::Quit => {
                     self.exit = true
                 },
@@ -77,6 +86,7 @@ impl GameState for State {
     }
 }
 
+#[derive(Serialize,Deserialize)]
 pub struct World {
     pub rng: RandomNumberGenerator,
     pub objects: Vec<Object>,
