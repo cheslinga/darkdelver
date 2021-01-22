@@ -1,15 +1,15 @@
 use crate::prelude::*;
 
 pub enum Actions {
-    MoveUp, MoveDown, MoveLeft, MoveRight,
-    MoveUpLeft, MoveUpRight, MoveDownLeft, MoveDownRight
+    MoveUp,MoveDown,MoveLeft,MoveRight,
+    MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
 }
 
 //Grabs the player's keypresses
 pub fn player_input(gs: &mut State, con: &BTerm) {
     match gs.con_status {
         ContextStatus::InGame => ingame_input(gs, con),
-        ContextStatus::MainMenu | ContextStatus::PauseMenu => menu_input(gs, con)
+        ContextStatus::MainMenu | ContextStatus::PauseMenu => menu_input(gs, con),
     }
 }
 
@@ -34,12 +34,11 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N
                 => process_action(gs, Actions::MoveDownRight),
 
-            VirtualKeyCode::Escape
-                => {
-                    gs.menu = Some(Menu::pause_menu());
-                    gs.con_status = ContextStatus::PauseMenu;
-                    gs.refresh_con = true;
-                },
+            VirtualKeyCode::Escape => {
+                gs.menu = Some(Menu::pause_menu());
+                gs.con_status = ContextStatus::PauseMenu;
+                gs.refresh_con = true;
+            },
 
             _ => {}
         }

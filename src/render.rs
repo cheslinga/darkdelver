@@ -3,7 +3,7 @@ use crate::prelude::*;
 //Runs all draw batching functions;
 pub fn batch_all(gs: &mut State) {
     batch_map_draws(&gs.world.active_map, &gs.world.camera);
-    batch_entity_draws(&gs.world.objects, &gs.world.camera);
+    batch_entity_draws(&gs.world.objects, &gs.world.active_map, &gs.world.camera);
 }
 
 //Adds all map tiles to the rendering batch.
@@ -33,7 +33,7 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
 }
 
 //Adds all visible entity renderables to the rendering batch.
-fn batch_entity_draws(objects: &Vec<Object>, camera: &Camera) {
+fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera) {
     let mut batch = DrawBatch::new();
     batch.target(0);
     let offset = Point::new(camera.min_x, camera.min_y);
@@ -42,7 +42,11 @@ fn batch_entity_draws(objects: &Vec<Object>, camera: &Camera) {
     let mut render_list: Vec<&Object> = Vec::new();
     for object in objects.iter() {
         if let Object{pos: Some(_), render: Some(_), ..} = object {
-            render_list.push(object)
+            let pos = object.pos.as_ref().unwrap();
+            let idx = map.index(pos.x, pos.y);
+            if map.visible[idx] && pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y {
+                render_list.push(object)
+            }
         }
     }
 

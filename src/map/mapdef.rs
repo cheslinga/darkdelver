@@ -1,42 +1,44 @@
 use bracket_lib::prelude::*;
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum TileClass {
     Wall,
-    Floor
+    Floor,
 }
 impl TileClass {
     pub fn does_collide(&self) -> bool {
         match self {
             Self::Wall => true,
-            _ => false
+            _ => false,
         }
     }
     pub fn does_blos(&self) -> bool {
         match self {
             Self::Wall => true,
-            _ => false
+            _ => false,
         }
     }
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Map {
     pub width: i32,
     pub height: i32,
     pub tiles: Vec<TileClass>,
     pub visible: Vec<bool>,
-    pub revealed: Vec<bool>
+    pub revealed: Vec<bool>,
+    pub objblocked: Vec<bool>,
 }
 impl Map {
     pub fn new(w: i32, h: i32) -> Map {
         Map {
             width: w,
             height: h,
-            tiles: vec![TileClass::Floor; (w*h) as usize],
-            visible: vec![false; (w*h) as usize],
-            revealed: vec![false; (w*h) as usize]
+            tiles: vec![TileClass::Floor; (w * h) as usize],
+            visible: vec![false; (w * h) as usize],
+            revealed: vec![false; (w * h) as usize],
+            objblocked: vec![false; (w * h) as usize],
         }
     }
 
@@ -48,16 +50,15 @@ impl Map {
     pub fn point_from_idx(&self, idx: usize) -> Point {
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
-        return Point::new(x,y)
+        return Point::new(x, y);
     }
 
     //Same as index, but returns a None option if the index is out of bounds
     pub fn try_index(&self, x: i32, y: i32) -> Option<usize> {
         if !self.in_bounds(x, y) {
-            return None
-        }
-        else {
-            return Some(self.index(x,y))
+            return None;
+        } else {
+            return Some(self.index(x, y));
         }
     }
     //Checks if something is within the map's boundaries
@@ -66,7 +67,8 @@ impl Map {
     }
     //Checks to see if the tile at an index is walkable
     pub fn walkable(&self, x: i32, y: i32) -> bool {
-        self.in_bounds(x,y) && !self.tiles[self.index(x,y)].does_collide()
+        let idx = self.index(x, y);
+        return self.in_bounds(x, y) && !self.tiles[idx].does_collide() && !self.objblocked[idx]
     }
 }
 
@@ -78,5 +80,5 @@ impl Algorithm2D for Map {
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         self.tiles[idx].does_blos()
-    } 
+    }
 }

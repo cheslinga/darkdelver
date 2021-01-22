@@ -1,4 +1,4 @@
-mod mapdef;
 mod generator;
-pub use mapdef::*;
+mod mapdef;
 pub use generator::*;
+pub use mapdef::*;

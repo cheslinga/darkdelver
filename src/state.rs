@@ -121,11 +121,18 @@ impl World {
             depth: 1,
             camera: Camera::new(Point::new(startpos.x, startpos.y))
         };
+
         world.objects.push(player);
+
+        for room in mapgen.rooms.iter().skip(1) {
+            world.objects.push(make_beast(room.center()))
+        }
+
         return world;
     }
 }
 
 fn exec_all_systems(gs: &mut State) {
     process_fov(&mut gs.world.objects, &mut gs.world.active_map);
+    update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
 }
