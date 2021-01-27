@@ -73,10 +73,9 @@ fn process_action(gs: &mut State, action: Actions) {
         Actions::MoveUpRight => try_move(gs, Point::new(1, -1)),
         Actions::MoveDownLeft => try_move(gs, Point::new(-1, 1)),
         Actions::MoveDownRight => try_move(gs, Point::new(1, 1)),
-
-        _ => {}
     }
     gs.refresh_con = true;
+    gs.turn_state = TurnState::AI;
 }
 
 //Attempts to move to a (hopefully) walkable tile.
@@ -86,9 +85,9 @@ fn try_move(gs: &mut State, delta: Point) {
     let mut player = &mut gs.world.objects[0];
 
     let dest = player.pos.unwrap() + delta;
-    if map.walkable(dest.x, dest.y) {
-        player.pos = Some(dest);
-        camera.move_camera(dest);
-        player.viewshed.as_mut().unwrap().refresh = true;
-    }
+    if !map.walkable(dest.x, dest.y) { return }
+
+    player.pos = Some(dest);
+    camera.move_camera(dest);
+    player.viewshed.as_mut().unwrap().refresh = true;
 }

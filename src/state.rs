@@ -2,10 +2,14 @@ use crate::prelude::*;
 use serde::{Serialize, Deserialize};
 
 #[derive(PartialEq)]
+pub enum TurnState { Player, AI }
+
+#[derive(PartialEq)]
 pub enum ContextStatus{ InGame, MainMenu, PauseMenu }
 
 pub struct State {
     pub world: World,
+    pub turn_state: TurnState,
     pub menu: Option<Menu>,
     pub exit: bool,
     pub con_status: ContextStatus,
@@ -15,6 +19,7 @@ impl State {
     pub fn init() -> State {
         State {
             world: World::empty(),
+            turn_state: TurnState::Player,
             menu: Some(Menu::main_menu()),
             exit: false,
             con_status: ContextStatus::MainMenu,
@@ -52,7 +57,7 @@ impl State {
 }
 impl GameState for State {
     fn tick(&mut self, con: &mut BTerm) {
-        player_input(self, con);
+        if self.turn_state == TurnState::Player {player_input(self, con)}
 
         match self.con_status {
             ContextStatus::InGame => {
@@ -134,5 +139,11 @@ impl World {
 
 fn exec_all_systems(gs: &mut State) {
     process_fov(&mut gs.world.objects, &mut gs.world.active_map);
+
+    if gs.turn_state == TurnState::AI {
+        process_ai(&mut gs.world.objects, &gs.world.active_map);
+        gs.turn_state = TurnState::Player;
+    }
+
     update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
 }

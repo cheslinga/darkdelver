@@ -8,7 +8,8 @@ pub struct Object {
     pub pos: Option<Point>,
     pub render: Option<Render>,
     pub viewshed: Option<Viewshed>,
-    pub block_tile: Option<bool>
+    pub block_tile: Option<bool>,
+    pub initiative: Option<u8>
 }
 impl Object {
     pub fn blank() -> Object {
@@ -19,7 +20,7 @@ impl Object {
 }
 
 //Component Definitions:
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum ActorTag {
     None,
     Static,
