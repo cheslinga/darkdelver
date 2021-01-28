@@ -34,6 +34,7 @@ pub fn make_beast(pos: Point) -> Object {
             refresh: true,
         }),
         block_tile: Some(true),
+        initiative: Some(8),
         ..Default::default()
     }
 }

@@ -1,17 +1,19 @@
 use crate::prelude::*;
 
 pub fn process_ai(objects: &mut Vec<Object>, map: &Map) {
-    let mut proclist: Vec<usize> = Vec::new();
+    let mut proclist: Vec<(usize, u8)> = Vec::new();
 
     for (id, obj) in objects.iter().enumerate() {
-        if let Object{ tag: Some(tag), .. } = obj {
+        if let Object{ tag: Some(tag), initiative: Some(init), .. } = obj {
             if *tag == ActorTag::Enemy {
-                proclist.push(id);
+                proclist.push((id, *init));
             }
         }
     }
+
+    proclist.sort_by(|a,b| a.0.cmp(&b.0));
     for id in proclist.iter() {
-        basic_enemy_ai(*id, objects, map);
+        basic_enemy_ai(id.0, objects, map);
     }
 }
 
