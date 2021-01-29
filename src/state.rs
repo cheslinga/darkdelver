@@ -57,12 +57,16 @@ impl State {
 }
 impl GameState for State {
     fn tick(&mut self, con: &mut BTerm) {
+        //Only take player input if it's the player's turn
         if self.turn_state == TurnState::Player {player_input(self, con)}
 
         match self.con_status {
+            //If the game is in it's normal running state
             ContextStatus::InGame => {
+                //Run all systems
                 exec_all_systems(self);
 
+                //Redraw to the console if it needs to be refreshed
                 if self.refresh_con {
                     con.cls();
                     batch_all(self);
@@ -70,23 +74,25 @@ impl GameState for State {
                     self.refresh_con = false;
                 }
             },
+            //If the game is in a menu of some sort
             ContextStatus::MainMenu | ContextStatus::PauseMenu => {
+                //Redraw if necessary
                 if self.refresh_con {
                     con.cls();
-
+                    //Draw a different menu based on which menu is open at the moment
                     match self.con_status {
                         ContextStatus::MainMenu => batch_main_menu(self.menu.as_ref().unwrap()),
                         ContextStatus::PauseMenu => batch_pause_menu(self.menu.as_ref().unwrap()),
                         _ => {}
                     }
-
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;
                 }
+                //If any menu actions are ready to run, run them
                 self.handle_menu_actions();
             }
         }
-
+        //Close the game if the player chooses to exit
         if self.exit == true {con.quit()}
     }
 }
@@ -139,11 +145,11 @@ impl World {
 
 fn exec_all_systems(gs: &mut State) {
     process_fov(&mut gs.world.objects, &mut gs.world.active_map);
+    update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
 
     if gs.turn_state == TurnState::AI {
         process_ai(&mut gs.world.objects, &gs.world.active_map);
         gs.turn_state = TurnState::Player;
+        update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
     }
-
-    update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
 }

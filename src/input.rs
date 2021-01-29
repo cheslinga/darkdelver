@@ -64,30 +64,28 @@ fn menu_input(gs: &mut State, con: &BTerm) {
 
 fn process_action(gs: &mut State, action: Actions) {
     match action {
-        Actions::MoveLeft => try_move(gs, Point::new(-1, 0)),
-        Actions::MoveRight => try_move(gs, Point::new(1, 0)),
-        Actions::MoveUp => try_move(gs, Point::new(0, -1)),
-        Actions::MoveDown => try_move(gs, Point::new(0, 1)),
+        Actions::MoveLeft => try_move_player(gs, Point::new(-1, 0)),
+        Actions::MoveRight => try_move_player(gs, Point::new(1, 0)),
+        Actions::MoveUp => try_move_player(gs, Point::new(0, -1)),
+        Actions::MoveDown => try_move_player(gs, Point::new(0, 1)),
 
-        Actions::MoveUpLeft => try_move(gs, Point::new(-1, -1)),
-        Actions::MoveUpRight => try_move(gs, Point::new(1, -1)),
-        Actions::MoveDownLeft => try_move(gs, Point::new(-1, 1)),
-        Actions::MoveDownRight => try_move(gs, Point::new(1, 1)),
+        Actions::MoveUpLeft => try_move_player(gs, Point::new(-1, -1)),
+        Actions::MoveUpRight => try_move_player(gs, Point::new(1, -1)),
+        Actions::MoveDownLeft => try_move_player(gs, Point::new(-1, 1)),
+        Actions::MoveDownRight => try_move_player(gs, Point::new(1, 1)),
     }
     gs.refresh_con = true;
     gs.turn_state = TurnState::AI;
 }
 
-//Attempts to move to a (hopefully) walkable tile.
-fn try_move(gs: &mut State, delta: Point) {
+//Attempts to move the player to another tile
+fn try_move_player(gs: &mut State, delta: Point) {
     let map = &gs.world.active_map;
     let camera = &mut gs.world.camera;
     let mut player = &mut gs.world.objects[0];
 
     let dest = player.pos.unwrap() + delta;
-    if !map.walkable(dest.x, dest.y) { return }
 
-    player.pos = Some(dest);
-    camera.move_camera(dest);
-    player.viewshed.as_mut().unwrap().refresh = true;
+    player.try_move(dest, map);
+    if map.walkable(dest.x, dest.y) { camera.move_camera(dest) }
 }
