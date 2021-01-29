@@ -19,12 +19,9 @@ pub fn process_ai(objects: &mut Vec<Object>, map: &Map) {
 
 fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map) {
     //Really basic shitty AI
-    let pos = objects[enemy_id].pos.unwrap();
+    let enemy = &mut objects[enemy_id];
+    let pos = enemy.pos.unwrap();
     let dest = pos + Point::new(1,0);
 
-    if !map.walkable(dest.x, dest.y) {
-        return
-    } else {
-        objects[enemy_id].pos = Some(dest);
-    }
+    enemy.try_move(dest, map);
 }

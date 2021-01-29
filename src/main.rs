@@ -9,6 +9,7 @@ mod saves;
 mod spawn;
 mod state;
 mod systems;
+mod actions;
 
 pub mod prelude {
     pub const CONSOLE_W: i32 = 80;
@@ -23,6 +24,7 @@ pub mod prelude {
     pub use crate::spawn::*;
     pub use crate::state::*;
     pub use crate::systems::*;
+    pub use crate::actions::*;
     pub use bracket_lib::prelude::*;
 }
 use crate::prelude::*;
