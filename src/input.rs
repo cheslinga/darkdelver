@@ -87,5 +87,5 @@ fn try_move_player(gs: &mut State, delta: Point) {
     let dest = player.pos.unwrap() + delta;
 
     player.try_move(dest, map);
-    if map.walkable(dest.x, dest.y) { camera.move_camera(dest) }
+    camera.move_camera(player.pos.unwrap());
 }
