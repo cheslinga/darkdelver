@@ -70,15 +70,64 @@ impl Map {
         let idx = self.index(x, y);
         return self.in_bounds(x, y) && !self.tiles[idx].does_collide() && !self.objblocked[idx]
     }
+
+    fn valid_exit(&self, pos: Point, delta: Point) -> Option<usize> {
+        let dest = pos + delta;
+
+        if self.in_bounds(dest.x, dest.y) {
+            if self.walkable(dest.x, dest.y) {
+                let idx = self.index(dest.x, dest.y);
+                return Some(idx)
+            }
+            else {
+                return None
+            }
+        }
+        else {
+            return None
+        }
+    }
 }
 
 impl Algorithm2D for Map {
     fn dimensions(&self) -> Point {
         Point::new(self.width, self.height)
     }
+    fn in_bounds(&self, point: Point) -> bool {
+        self.in_bounds(point.x, point.y)
+    }
 }
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
         self.tiles[idx].does_blos()
+    }
+
+    fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
+        return DistanceAlg::Pythagoras.distance2d(
+            self.point_from_idx(idx1),
+            self.point_from_idx(idx2)
+        )
+    }
+
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        const LEFT: Point = Point { x: -1, y: 0 };
+        const RIGHT: Point = Point { x: 1, y: 0 };
+        const UP: Point = Point { x: 0, y: -1 };
+        const DOWN: Point = Point { x: 0, y: 1 };
+
+        let mut exits = SmallVec::new();
+        let location = self.point_from_idx(idx);
+
+        if let Some(idx) = self.valid_exit(location, LEFT) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(location, RIGHT) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(location, UP) { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(location, DOWN) { exits.push((idx, 1.0)) }
+
+        if let Some(idx) = self.valid_exit(location, UP + LEFT) { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(location, DOWN + LEFT) { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(location, UP + RIGHT) { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(location, DOWN + RIGHT) { exits.push((idx, 1.45)) }
+
+        return exits
     }
 }

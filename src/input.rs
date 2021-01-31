@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub enum Actions {
     MoveUp,MoveDown,MoveLeft,MoveRight,
     MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
+    Wait,
 }
 
 //Grabs the player's keypresses
@@ -34,6 +35,9 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N
                 => process_action(gs, Actions::MoveDownRight),
 
+            VirtualKeyCode::Numpad5 | VirtualKeyCode::Period
+            => process_action(gs, Actions::Wait),
+
             VirtualKeyCode::Escape => {
                 gs.menu = Some(Menu::pause_menu());
                 gs.con_status = ContextStatus::PauseMenu;
@@ -63,7 +67,9 @@ fn menu_input(gs: &mut State, con: &BTerm) {
 }
 
 fn process_action(gs: &mut State, action: Actions) {
-    match action {
+    let actionresult: bool = match action {
+        Actions::Wait => true,
+
         Actions::MoveLeft => try_move_player(gs, Point::new(-1, 0)),
         Actions::MoveRight => try_move_player(gs, Point::new(1, 0)),
         Actions::MoveUp => try_move_player(gs, Point::new(0, -1)),
@@ -73,19 +79,22 @@ fn process_action(gs: &mut State, action: Actions) {
         Actions::MoveUpRight => try_move_player(gs, Point::new(1, -1)),
         Actions::MoveDownLeft => try_move_player(gs, Point::new(-1, 1)),
         Actions::MoveDownRight => try_move_player(gs, Point::new(1, 1)),
-    }
+    };
     gs.refresh_con = true;
-    gs.turn_state = TurnState::AI;
+    if actionresult { gs.turn_state = TurnState::AI; }
 }
 
 //Attempts to move the player to another tile
-fn try_move_player(gs: &mut State, delta: Point) {
+fn try_move_player(gs: &mut State, delta: Point) -> bool {
     let map = &gs.world.active_map;
     let camera = &mut gs.world.camera;
-    let mut player = &mut gs.world.objects[0];
+    let player = &mut gs.world.objects[0];
 
     let dest = player.pos.unwrap() + delta;
 
     player.try_move(dest, map);
     camera.move_camera(player.pos.unwrap());
+
+    if player.pos.unwrap() != dest { return false }
+    else { return true }
 }
