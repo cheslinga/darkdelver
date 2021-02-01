@@ -14,6 +14,12 @@ mod actions;
 pub mod prelude {
     pub const CONSOLE_W: i32 = 80;
     pub const CONSOLE_H: i32 = 60;
+
+    pub const DL_LEFT: Point = Point { x: -1, y: 0 };
+    pub const DL_RIGHT: Point = Point { x: 1, y: 0 };
+    pub const DL_UP: Point = Point { x: 0, y: -1 };
+    pub const DL_DOWN: Point = Point { x: 0, y: 1 };
+
     pub use crate::camera::*;
     pub use crate::input::*;
     pub use crate::map::*;

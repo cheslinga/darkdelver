@@ -125,7 +125,7 @@ impl World {
         let startpos = player.pos.unwrap();
 
         let mut world = World {
-            rng: rng,
+            rng,
             objects: Vec::new(),
             active_map: mapgen.map,
             last_map: None,
@@ -148,8 +148,7 @@ fn exec_all_systems(gs: &mut State) {
     update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
 
     if gs.turn_state == TurnState::AI {
-        process_ai(&mut gs.world.objects, &gs.world.active_map);
+        process_ai(&mut gs.world.objects, &mut gs.world.active_map);
         gs.turn_state = TurnState::Player;
-        update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
     }
 }
