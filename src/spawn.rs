@@ -14,7 +14,11 @@ pub fn spawn_player(startpos: Point) -> Object {
             visible: Vec::new(),
             refresh: true,
         }),
-        block_tile: Some(true),
+        block_tile: true,
+
+        health: Some(Health::new(24)),
+        damage: Some(Damage::new(1,6)),
+
         ..Default::default()
     }
 }
@@ -33,8 +37,12 @@ pub fn make_beast(pos: Point) -> Object {
             visible: Vec::new(),
             refresh: true,
         }),
-        block_tile: Some(true),
+        block_tile: true,
         initiative: Some(8),
+
+        health: Some(Health::new(6)),
+        damage: Some(Damage::new(1,3)),
+
         ..Default::default()
     }
 }

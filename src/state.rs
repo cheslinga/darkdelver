@@ -2,10 +2,10 @@ use crate::prelude::*;
 use serde::{Serialize, Deserialize};
 
 #[derive(PartialEq)]
-pub enum TurnState { Player, AI }
+pub enum TurnState { Player, AI, GameOver }
 
 #[derive(PartialEq)]
-pub enum ContextStatus{ InGame, MainMenu, PauseMenu }
+pub enum ContextStatus{ InGame, MainMenu, PauseMenu, GameOver }
 
 pub struct State {
     pub world: World,
@@ -23,7 +23,7 @@ impl State {
             menu: Some(Menu::main_menu()),
             exit: false,
             con_status: ContextStatus::MainMenu,
-            refresh_con: true
+            refresh_con: true,
         }
     }
     fn handle_menu_actions(&mut self) {
@@ -50,6 +50,11 @@ impl State {
                 MenuSelection::Continue => {
                     self.con_status = ContextStatus::InGame;
                     self.refresh_con = true;
+                },
+                MenuSelection::ReturnToMain => {
+                    self.con_status = ContextStatus::MainMenu;
+                    self.menu = Some(Menu::main_menu());
+                    self.refresh_con = true;
                 }
             }
         }
@@ -75,7 +80,7 @@ impl GameState for State {
                 }
             },
             //If the game is in a menu of some sort
-            ContextStatus::MainMenu | ContextStatus::PauseMenu => {
+            ContextStatus::MainMenu | ContextStatus::PauseMenu | ContextStatus::GameOver => {
                 //Redraw if necessary
                 if self.refresh_con {
                     con.cls();
@@ -83,6 +88,7 @@ impl GameState for State {
                     match self.con_status {
                         ContextStatus::MainMenu => batch_main_menu(self.menu.as_ref().unwrap()),
                         ContextStatus::PauseMenu => batch_pause_menu(self.menu.as_ref().unwrap()),
+                        ContextStatus::GameOver => batch_game_over(self.menu.as_ref().unwrap(), self),
                         _ => {}
                     }
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
@@ -90,7 +96,13 @@ impl GameState for State {
                 }
                 //If any menu actions are ready to run, run them
                 self.handle_menu_actions();
-            }
+            },
+        }
+
+        if self.turn_state == TurnState::GameOver {
+            self.con_status = ContextStatus::GameOver;
+            self.menu = Some(Menu::game_over());
+            self.turn_state = TurnState::Player;
         }
         //Close the game if the player chooses to exit
         if self.exit == true {con.quit()}
@@ -146,9 +158,10 @@ impl World {
 fn exec_all_systems(gs: &mut State) {
     process_fov(&mut gs.world.objects, &mut gs.world.active_map);
     update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
+    proc_all_wounds(&mut gs.world.objects, &mut gs.turn_state);
 
     if gs.turn_state == TurnState::AI {
-        process_ai(&mut gs.world.objects, &mut gs.world.active_map);
+        process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
         gs.turn_state = TurnState::Player;
     }
 }

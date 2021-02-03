@@ -10,7 +10,9 @@ pub enum Actions {
 pub fn player_input(gs: &mut State, con: &BTerm) {
     match gs.con_status {
         ContextStatus::InGame => ingame_input(gs, con),
-        ContextStatus::MainMenu | ContextStatus::PauseMenu => menu_input(gs, con),
+        ContextStatus::MainMenu |
+        ContextStatus::PauseMenu |
+        ContextStatus::GameOver => menu_input(gs, con),
     }
 }
 
@@ -90,11 +92,31 @@ fn try_move_player(gs: &mut State, delta: Point) -> bool {
     let camera = &mut gs.world.camera;
     let player = &mut gs.world.objects[0];
 
-    let dest = player.pos.unwrap() + delta;
+    let mut dest = player.pos.unwrap() + delta;
 
     player.try_move(dest, map);
     camera.move_camera(player.pos.unwrap());
 
-    if player.pos.unwrap() != dest { return false }
-    else { return true }
+    return if player.pos.unwrap() == dest { true } else { try_attack_player(gs, &mut dest) }
+}
+
+//Attempts to attack something
+fn try_attack_player(gs: &mut State, dest: &mut Point) -> bool {
+    let (player, all) = gs.world.objects.split_at_mut(1);
+    let mut target: Option<&mut Object> = None;
+
+    for obj in all.iter_mut() {
+        if let Object { pos: Some(pos), tag: Some(tag), health: Some(_), .. } = obj {
+            if pos == dest && tag == &mut ActorTag::Enemy {
+                target = Some(obj);
+            }
+        }
+    }
+
+    return if let Some(tgt) = target {
+        player[0].try_attack(tgt, &mut gs.world.rng);
+        true
+    } else {
+        false
+    }
 }
