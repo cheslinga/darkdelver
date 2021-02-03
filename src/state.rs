@@ -35,6 +35,7 @@ impl State {
                     self.world = World::new_game();
                     self.con_status = ContextStatus::InGame;
                     self.refresh_con = true;
+                    self.proc = true;
                 },
                 MenuSelection::SaveGame => {
                     export_world(&self.world);
@@ -105,6 +106,8 @@ impl GameState for State {
             self.con_status = ContextStatus::GameOver;
             self.menu = Some(Menu::game_over());
             self.turn_state = TurnState::Player;
+            self.refresh_con = true;
+            self.proc = true;
         }
         //Close the game if the player chooses to exit
         if self.exit == true {con.quit()}
