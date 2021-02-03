@@ -32,6 +32,7 @@ pub mod prelude {
     pub use crate::systems::*;
     pub use crate::actions::*;
     pub use bracket_lib::prelude::*;
+    pub use std::cmp::Reverse;
 }
 use crate::prelude::*;
 

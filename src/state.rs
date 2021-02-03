@@ -12,6 +12,7 @@ pub struct State {
     pub turn_state: TurnState,
     pub proc: bool,
     pub menu: Option<Menu>,
+    pub gameover: bool,
     pub exit: bool,
     pub con_status: ContextStatus,
     pub refresh_con: bool
@@ -23,6 +24,7 @@ impl State {
             turn_state: TurnState::Player,
             proc: true,
             menu: Some(Menu::main_menu()),
+            gameover: false,
             exit: false,
             con_status: ContextStatus::MainMenu,
             refresh_con: true,
@@ -164,12 +166,19 @@ fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         process_fov(&mut gs.world.objects, &mut gs.world.active_map);
         update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
-        proc_all_wounds(&mut gs.world.objects, &mut gs.turn_state);
+        proc_all_wounds(&mut gs.world.objects, &mut gs.gameover);
 
         if gs.turn_state == TurnState::AI {
             process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
+            proc_all_wounds(&mut gs.world.objects, &mut gs.gameover);
             gs.turn_state = TurnState::Player;
         }
+
+        if gs.gameover {
+            gs.turn_state = TurnState::GameOver;
+            gs.gameover = false;
+        }
+
         gs.proc = false;
     }
 }

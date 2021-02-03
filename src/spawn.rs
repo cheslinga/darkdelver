@@ -15,6 +15,7 @@ pub fn spawn_player(startpos: Point) -> Object {
             refresh: true,
         }),
         block_tile: true,
+        initiative: Some(12),
 
         health: Some(Health::new(24)),
         damage: Some(Damage::new(1,6)),

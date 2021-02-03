@@ -13,7 +13,7 @@ pub fn process_ai(objects: &mut Vec<Object>, map: &mut Map, rng: &mut RandomNumb
         }
     }
 
-    proclist.sort_by(|a,b| a.0.cmp(&b.0));
+    proclist.sort_by_key(|a| Reverse(a.0));
     for id in proclist.iter() {
         basic_enemy_ai(id.0, objects, map, rng, player_pos);
         update_blocked_tiles(objects, map);
