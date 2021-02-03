@@ -83,6 +83,7 @@ fn process_action(gs: &mut State, action: Actions) {
         Actions::MoveDownRight => try_move_player(gs, DL_DOWN + DL_RIGHT),
     };
     gs.refresh_con = true;
+    gs.proc = true;
     if actionresult { gs.turn_state = TurnState::AI; }
 }
 

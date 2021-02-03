@@ -10,6 +10,7 @@ pub enum ContextStatus{ InGame, MainMenu, PauseMenu, GameOver }
 pub struct State {
     pub world: World,
     pub turn_state: TurnState,
+    pub proc: bool,
     pub menu: Option<Menu>,
     pub exit: bool,
     pub con_status: ContextStatus,
@@ -20,6 +21,7 @@ impl State {
         State {
             world: World::empty(),
             turn_state: TurnState::Player,
+            proc: true,
             menu: Some(Menu::main_menu()),
             exit: false,
             con_status: ContextStatus::MainMenu,
@@ -156,12 +158,15 @@ impl World {
 }
 
 fn exec_all_systems(gs: &mut State) {
-    process_fov(&mut gs.world.objects, &mut gs.world.active_map);
-    update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
-    proc_all_wounds(&mut gs.world.objects, &mut gs.turn_state);
+    if gs.proc {
+        process_fov(&mut gs.world.objects, &mut gs.world.active_map);
+        update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
+        proc_all_wounds(&mut gs.world.objects, &mut gs.turn_state);
 
-    if gs.turn_state == TurnState::AI {
-        process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
-        gs.turn_state = TurnState::Player;
+        if gs.turn_state == TurnState::AI {
+            process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
+            gs.turn_state = TurnState::Player;
+        }
+        gs.proc = false;
     }
 }
