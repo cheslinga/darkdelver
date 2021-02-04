@@ -2,12 +2,12 @@ use crate::prelude::*;
 
 pub fn proc_all_wounds(objects: &mut Vec<Object>, player_death: &mut bool) {
     let mut kill_list: Vec<usize> = Vec::new();
-    let mut woundlist: Vec<(usize, u8)> = Vec::new();
+    let mut woundlist: InitList = InitList::new();
 
     for (i, obj) in objects.iter().enumerate() {
-        woundlist.push((i, obj.initiative.unwrap_or(0)));
+        woundlist.add_object(i, obj.initiative.unwrap_or(0));
     }
-    woundlist.sort_by_key(|a| Reverse(a.0));
+    woundlist.sort();
 
     for sorted in woundlist.iter() {
         let id = sorted.0;

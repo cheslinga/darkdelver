@@ -12,14 +12,6 @@ mod systems;
 mod actions;
 
 pub mod prelude {
-    pub const CONSOLE_W: i32 = 80;
-    pub const CONSOLE_H: i32 = 60;
-
-    pub const DL_LEFT: Point = Point { x: -1, y: 0 };
-    pub const DL_RIGHT: Point = Point { x: 1, y: 0 };
-    pub const DL_UP: Point = Point { x: 0, y: -1 };
-    pub const DL_DOWN: Point = Point { x: 0, y: 1 };
-
     pub use crate::camera::*;
     pub use crate::input::*;
     pub use crate::map::*;
@@ -33,6 +25,34 @@ pub mod prelude {
     pub use crate::actions::*;
     pub use bracket_lib::prelude::*;
     pub use std::cmp::Reverse;
+
+    //Consts to define the drawable console space
+    pub const CONSOLE_W: i32 = 80;
+    pub const CONSOLE_H: i32 = 60;
+
+    //Constant point values used as directional indicators
+    pub const DL_LEFT: Point = Point { x: -1, y: 0 };
+    pub const DL_RIGHT: Point = Point { x: 1, y: 0 };
+    pub const DL_UP: Point = Point { x: 0, y: -1 };
+    pub const DL_DOWN: Point = Point { x: 0, y: 1 };
+
+    //Type alias for a vec of array indices and initiative values
+    pub type InitList = Vec<(usize, u8)>;
+
+    pub trait InitListTrait {
+        fn add_object(&mut self, id: usize, init: u8);
+        fn sort(&mut self);
+    }
+    impl InitListTrait for InitList {
+        //Adds a new object to the list
+        fn add_object(&mut self, id: usize, init: u8) {
+            self.push((id, init));
+        }
+        //Sorts by descending initiative order
+        fn sort(&mut self) {
+            self.sort_by_key(|a| Reverse(a.1));
+        }
+    }
 }
 use crate::prelude::*;
 

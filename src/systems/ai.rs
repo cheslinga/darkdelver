@@ -3,19 +3,19 @@ use crate::prelude::*;
 pub fn process_ai(objects: &mut Vec<Object>, map: &mut Map, rng: &mut RandomNumberGenerator) {
     let (player, all) = objects.split_at_mut(1);
     let player_pos = player[0].pos.unwrap();
-    let mut proclist: Vec<(usize, u8)> = Vec::new();
+    let mut proclist: InitList = InitList::new();
 
     for (id, obj) in all.iter().enumerate() {
         if let Object{ tag: Some(tag), initiative: Some(init), .. } = obj {
             if *tag == ActorTag::Enemy {
-                proclist.push((id, *init));
+                proclist.add_object(id, *init);
             }
         }
     }
+    proclist.sort();
 
-    proclist.sort_by_key(|a| Reverse(a.0));
-    for id in proclist.iter() {
-        basic_enemy_ai(id.0, objects, map, rng, player_pos);
+    for unit in proclist.iter() {
+        basic_enemy_ai(unit.0, objects, map, rng, player_pos);
         update_blocked_tiles(objects, map);
     }
 }
