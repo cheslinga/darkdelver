@@ -11,8 +11,21 @@ pub fn player_input(gs: &mut State, con: &BTerm) {
     match gs.con_status {
         ContextStatus::InGame => ingame_input(gs, con),
         ContextStatus::MainMenu |
-        ContextStatus::PauseMenu |
-        ContextStatus::GameOver => menu_input(gs, con),
+        ContextStatus::PauseMenu => menu_input(gs, con),
+    }
+}
+
+pub fn game_over_input(gs: &mut State, con: &BTerm) {
+    if let Some(key) = con.key {
+        match key {
+            VirtualKeyCode::Return | VirtualKeyCode::R => {
+                gs.con_status = ContextStatus::MainMenu;
+                gs.menu = Some(Menu::main_menu());
+                gs.turn_state = TurnState::Player;
+                gs.refresh_con = true;
+            },
+            _ => {}
+        }
     }
 }
 
@@ -84,7 +97,7 @@ fn process_action(gs: &mut State, action: Actions) {
     };
     gs.refresh_con = true;
     gs.proc = true;
-    if actionresult { gs.turn_state = TurnState::AI; }
+    if actionresult { gs.passed = true; }
 }
 
 //Attempts to move the player to another tile

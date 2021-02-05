@@ -6,8 +6,7 @@ pub enum MenuSelection {
     LoadGame,
     Quit,
     Continue,
-    SaveGame,
-    ReturnToMain,
+    SaveGame
 }
 
 pub struct Menu {
@@ -33,16 +32,6 @@ impl Menu {
                 MenuSelection::Continue,
                 MenuSelection::SaveGame,
                 MenuSelection::LoadGame,
-                MenuSelection::Quit,
-            ],
-            current_selection: 0,
-            processed_selection: None,
-        }
-    }
-    pub fn game_over() -> Menu {
-        Menu {
-            selections: vec![
-                MenuSelection::ReturnToMain,
                 MenuSelection::Quit,
             ],
             current_selection: 0,
@@ -152,38 +141,6 @@ pub fn batch_pause_menu(menu: &Menu) {
     );
     batch.print_color(
         Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 7),
-        "Quit",
-        quit_pair,
-    );
-
-    batch.submit(0).expect("Failed to batch menu draw");
-}
-pub fn batch_game_over(menu: &Menu, gs: &State) {
-    let mut batch = DrawBatch::new();
-    batch.target(0);
-
-    batch.print_color_centered(CONSOLE_H / 4, "YOU DIED!", ColorPair::new(RED, BLACK));
-    batch.print_color_centered(CONSOLE_H / 4 + 1, format!("On Level {}.", gs.world.depth), ColorPair::new(RED, BLACK));
-
-    let unselected: ColorPair = ColorPair::new(WHITE, BLACK);
-    let selected: ColorPair = ColorPair::new(YELLOW, GREY10);
-
-    let mut return_pair: ColorPair = unselected;
-    let mut quit_pair: ColorPair = unselected;
-
-    if menu.current_selection == 0 {
-        return_pair = selected;
-    } else if menu.current_selection == 1 {
-        quit_pair = selected;
-    }
-
-    batch.print_color(
-        Point::new(CONSOLE_W / 2 - 9, CONSOLE_H / 4 + 3),
-        "Return to Main Menu",
-        return_pair,
-    );
-    batch.print_color(
-        Point::new(CONSOLE_W / 2 - 2, CONSOLE_H / 4 + 5),
         "Quit",
         quit_pair,
     );

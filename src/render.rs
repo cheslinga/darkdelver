@@ -1,9 +1,9 @@
 use crate::prelude::*;
 
 //Runs all draw batching functions;
-pub fn batch_all(gs: &mut State) {
-    batch_map_draws(&gs.world.active_map, &gs.world.camera);
-    batch_entity_draws(&gs.world.objects, &gs.world.active_map, &gs.world.camera);
+pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>) {
+    batch_map_draws(map, camera);
+    batch_entity_draws(objects, map, camera);
 }
 
 //Adds all map tiles to the rendering batch.

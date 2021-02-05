@@ -5,13 +5,14 @@ use serde::{Serialize, Deserialize};
 pub enum TurnState { Player, AI, GameOver }
 
 #[derive(PartialEq)]
-pub enum ContextStatus{ InGame, MainMenu, PauseMenu, GameOver }
+pub enum ContextStatus{ InGame, MainMenu, PauseMenu }
 
 pub struct State {
     pub world: World,
     pub turn_state: TurnState,
-    pub proc: bool,
     pub menu: Option<Menu>,
+    pub proc: bool,
+    pub passed: bool,
     pub gameover: bool,
     pub exit: bool,
     pub con_status: ContextStatus,
@@ -22,8 +23,9 @@ impl State {
         State {
             world: World::empty(),
             turn_state: TurnState::Player,
-            proc: true,
             menu: Some(Menu::main_menu()),
+            proc: true,
+            passed: false,
             gameover: false,
             exit: false,
             con_status: ContextStatus::MainMenu,
@@ -56,11 +58,6 @@ impl State {
                     self.con_status = ContextStatus::InGame;
                     self.refresh_con = true;
                 },
-                MenuSelection::ReturnToMain => {
-                    self.con_status = ContextStatus::MainMenu;
-                    self.menu = Some(Menu::main_menu());
-                    self.refresh_con = true;
-                }
             }
         }
     }
@@ -68,7 +65,8 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, con: &mut BTerm) {
         //Only take player input if it's the player's turn
-        if self.turn_state == TurnState::Player {player_input(self, con)}
+        if self.turn_state == TurnState::Player { player_input(self, con) }
+        else if self.turn_state == TurnState::GameOver { game_over_input(self, con) }
 
         match self.con_status {
             //If the game is in it's normal running state
@@ -79,13 +77,13 @@ impl GameState for State {
                 //Redraw to the console if it needs to be refreshed
                 if self.refresh_con {
                     con.cls();
-                    batch_all(self);
+                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects);
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;
                 }
             },
             //If the game is in a menu of some sort
-            ContextStatus::MainMenu | ContextStatus::PauseMenu | ContextStatus::GameOver => {
+            ContextStatus::MainMenu | ContextStatus::PauseMenu => {
                 //Redraw if necessary
                 if self.refresh_con {
                     con.cls();
@@ -93,7 +91,6 @@ impl GameState for State {
                     match self.con_status {
                         ContextStatus::MainMenu => batch_main_menu(self.menu.as_ref().unwrap()),
                         ContextStatus::PauseMenu => batch_pause_menu(self.menu.as_ref().unwrap()),
-                        ContextStatus::GameOver => batch_game_over(self.menu.as_ref().unwrap(), self),
                         _ => {}
                     }
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
@@ -104,13 +101,6 @@ impl GameState for State {
             },
         }
 
-        if self.turn_state == TurnState::GameOver {
-            self.con_status = ContextStatus::GameOver;
-            self.menu = Some(Menu::game_over());
-            self.turn_state = TurnState::Player;
-            self.refresh_con = true;
-            self.proc = true;
-        }
         //Close the game if the player chooses to exit
         if self.exit == true {con.quit()}
     }
@@ -168,13 +158,23 @@ fn exec_all_systems(gs: &mut State) {
         update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
         proc_all_wounds(&mut gs.world.objects, &mut gs.gameover);
 
+        //Check if the player's turn was passed
+        if gs.passed {
+            gs.turn_state = TurnState::AI;
+            gs.passed = false;
+        }
+
+        //Run any stuff for the AI if it's the AI's turn
         if gs.turn_state == TurnState::AI {
             process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
+            update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
             proc_all_wounds(&mut gs.world.objects, &mut gs.gameover);
             gs.turn_state = TurnState::Player;
         }
 
+        //Set the turn state on a game over event.
         if gs.gameover {
+            console::log("You have died. Press Enter or R to return to the main menu.");
             gs.turn_state = TurnState::GameOver;
             gs.gameover = false;
         }
