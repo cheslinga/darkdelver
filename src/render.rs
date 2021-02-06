@@ -4,6 +4,7 @@ use crate::prelude::*;
 pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>) {
     batch_map_draws(map, camera);
     batch_entity_draws(objects, map, camera);
+    batch_ui_draws();
 }
 
 //Adds all map tiles to the rendering batch.
@@ -50,6 +51,7 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera) {
         }
     }
 
+    render_list.sort_by_key(|o| o.render.as_ref().unwrap().order);
     for obj in render_list.iter() {
         let pos = obj.pos.unwrap();
         let render = obj.render.as_ref().unwrap();
@@ -57,6 +59,16 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera) {
     }
 
     batch.submit(5000).expect("Failed to batch entity draw");
+}
+
+fn batch_ui_draws() {
+    let mut batch = DrawBatch::new();
+    batch.target(0);
+
+    batch.draw_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
+    batch.draw_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
+
+    batch.submit(10000).expect("Failed to batch UI draw");
 }
 
 //Returns glyph and color pair info for a tile.

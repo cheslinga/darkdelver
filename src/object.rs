@@ -41,6 +41,7 @@ impl Default for ActorTag {
 pub struct Render {
     pub glyph: FontCharType,
     pub color: ColorPair,
+    pub order: u8
 }
 
 #[derive(Serialize, Deserialize)]

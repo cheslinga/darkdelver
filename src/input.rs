@@ -74,7 +74,7 @@ fn menu_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Return
                 => gs.menu.as_mut().unwrap().process_selection(),
             VirtualKeyCode::Escape
-                => gs.con_status = ContextStatus::InGame,
+                => { if gs.con_status == ContextStatus::PauseMenu { gs.con_status = ContextStatus::InGame } },
             _ => {}
         }
         gs.refresh_con = true;

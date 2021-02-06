@@ -32,7 +32,7 @@ fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map, rng: &m
             let mut dest: Point = pos;
             let distance = DistanceAlg::Pythagoras.distance2d(pos, player_pos);
             let targets = vec![map.index(player_pos.x, player_pos.y)];
-            let dijkstra_map = DijkstraMap::new(CONSOLE_W, CONSOLE_H, &targets, map, 1024.0);
+            let dijkstra_map = DijkstraMap::new(90, 90, &targets, map, 1024.0);
 
             if let Some(destidx) = DijkstraMap::find_lowest_exit(&dijkstra_map, map.index(pos.x, pos.y), map) {
                 dest = if distance > 1.45 {

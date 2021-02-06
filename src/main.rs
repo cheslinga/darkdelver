@@ -71,6 +71,7 @@ fn build_console(w: i32, h: i32) -> BTerm {
         .with_tile_dimensions(16, 16)
         .with_dimensions(w / 16, h / 16)
         .with_simple_console(CONSOLE_W, CONSOLE_H, "font.png")
+        .with_sparse_console_no_bg(CONSOLE_W, CONSOLE_H, "font.png")
         .with_vsync(true)
         .build()
         .unwrap();
