@@ -77,7 +77,7 @@ impl GameState for State {
                 //Redraw to the console if it needs to be refreshed
                 if self.refresh_con {
                     con.cls();
-                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects);
+                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, self.world.depth);
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;
                 }
@@ -139,16 +139,44 @@ impl World {
             active_map: mapgen.map,
             last_map: None,
             depth: 1,
-            camera: Camera::new(Point::new(startpos.x, startpos.y))
+            camera: Camera::new(startpos)
         };
 
         world.objects.push(player);
 
         for room in mapgen.rooms.iter().skip(1) {
-            world.objects.push(make_beast(room.center()))
+            world.objects.push(make_beast(room.center(), 1))
         }
 
         return world;
+    }
+    pub fn descend_to_next(&mut self) {
+        //Copy the old map to the last_map member
+        self.last_map = Some(Map::from_copy(&self.active_map));
+        self.depth += 1;
+        self.objects[0].floor = self.depth;
+
+        //Set up a new map
+        let mapgen = MapGenerator::random_rooms_build(60, 60, &mut self.rng);
+        self.objects[0].pos = Some(mapgen.rooms[0].center());
+        self.objects[0].viewshed.as_mut().unwrap().refresh = true;
+        self.camera = Camera::new(mapgen.rooms[0].center());
+        self.active_map = mapgen.map;
+
+        for room in mapgen.rooms.iter().skip(1) {
+            self.objects.push(make_beast(room.center(), self.depth))
+        }
+
+        //Clean up any objects that are 2 floors above
+        let mut removelist: Vec<usize> = Vec::new();
+        for (i, obj) in self.objects.iter().enumerate() {
+            if obj.floor < self.depth - 1 {
+                removelist.push(i);
+            }
+        }
+        for i in removelist.iter() {
+            self.objects.remove(*i);
+        }
     }
 }
 

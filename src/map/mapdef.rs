@@ -6,6 +6,7 @@ use crate::prelude::*;
 pub enum TileClass {
     Wall,
     Floor,
+    DownStair,
 }
 impl TileClass {
     pub fn does_collide(&self) -> bool {
@@ -22,7 +23,7 @@ impl TileClass {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Map {
     pub width: i32,
     pub height: i32,
@@ -40,6 +41,16 @@ impl Map {
             visible: vec![false; (w * h) as usize],
             revealed: vec![false; (w * h) as usize],
             objblocked: vec![false; (w * h) as usize],
+        }
+    }
+    pub fn from_copy(old_map: &Map) -> Map {
+        Map {
+            width: old_map.width,
+            height: old_map.height,
+            tiles: old_map.tiles.to_owned(),
+            visible: old_map.visible.to_owned(),
+            revealed: old_map.revealed.to_owned(),
+            objblocked: old_map.objblocked.to_owned()
         }
     }
 

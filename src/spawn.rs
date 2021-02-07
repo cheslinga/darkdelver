@@ -5,6 +5,7 @@ pub fn spawn_player(startpos: Point) -> Object {
         name: Some("Player".to_string()),
         tag: Some(ActorTag::Player),
         pos: Some(startpos),
+        floor: 1,
         render: Some(Render {
             glyph: 64,
             color: ColorPair::new(WHITE, BLACK),
@@ -18,18 +19,19 @@ pub fn spawn_player(startpos: Point) -> Object {
         block_tile: true,
         initiative: Some(12),
 
-        health: Some(Health::new(24)),
+        health: Some(Health::new(48)),
         damage: Some(Damage::new(1,6)),
 
         ..Default::default()
     }
 }
 
-pub fn make_beast(pos: Point) -> Object {
+pub fn make_beast(pos: Point, depth: i32) -> Object {
     Object {
         name: Some("Bloodthirsty Beast".to_string()),
         tag: Some(ActorTag::Enemy),
         pos: Some(pos),
+        floor: depth,
         render: Some(Render {
             glyph: 98,
             color: ColorPair::new(RED, BLACK),
@@ -50,10 +52,11 @@ pub fn make_beast(pos: Point) -> Object {
     }
 }
 
-pub fn make_corpse(pos: Point) -> Object {
+pub fn make_corpse(pos: Point, floor: i32) -> Object {
     Object {
         name: Some("A Corpse".to_string()),
         pos: Some(pos),
+        floor,
         render: Some(Render {
             glyph: 37,
             color: ColorPair::new(MAROON, BLACK),

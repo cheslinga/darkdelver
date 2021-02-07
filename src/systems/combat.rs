@@ -41,7 +41,8 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, player_death: &mut bool) {
     //Kill anything that had 0 or less health
     for id in kill_list.iter() {
         let pos = objects[*id].pos.unwrap();
-        objects.push(make_corpse(pos));
+        let floor = objects[*id].floor;
+        objects.push(make_corpse(pos, floor));
         objects.remove(*id);
     }
 }

@@ -43,6 +43,10 @@ impl MapGenerator {
         gen.make_randomly_placed_rooms(rng);
         gen.add_corridors_sorted(rng);
         gen.start_pos = gen.rooms[0].center();
+
+        let last_center = gen.map.point2d_to_index(gen.rooms[gen.rooms.len()-1].center());
+        gen.map.tiles[last_center] = TileClass::DownStair;
+
         return gen;
     }
     //Creates some rects of flooring to create rooms

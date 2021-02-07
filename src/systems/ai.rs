@@ -28,7 +28,7 @@ fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map, rng: &m
     let pos = enemy.pos.unwrap();
 
     if let Object { viewshed: Some(view), ..} = enemy {
-        if view.visible.contains(&player_pos) {
+        if view.visible.contains(&player_pos) && enemy.floor == player.floor {
             let mut dest: Point = pos;
             let distance = DistanceAlg::Pythagoras.distance2d(pos, player_pos);
             let targets = vec![map.index(player_pos.x, player_pos.y)];

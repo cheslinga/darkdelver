@@ -1,9 +1,9 @@
 use crate::prelude::*;
 
 //Runs all draw batching functions;
-pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>) {
+pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>, floor: i32) {
     batch_map_draws(map, camera);
-    batch_entity_draws(objects, map, camera);
+    batch_entity_draws(objects, map, camera, floor);
     batch_ui_draws();
 }
 
@@ -34,7 +34,7 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
 }
 
 //Adds all visible entity renderables to the rendering batch.
-fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera) {
+fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: i32) {
     let mut batch = DrawBatch::new();
     batch.target(0);
     let offset = Point::new(camera.min_x, camera.min_y);
@@ -45,7 +45,7 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera) {
         if let Object{pos: Some(_), render: Some(_), ..} = object {
             let pos = object.pos.as_ref().unwrap();
             let idx = map.index(pos.x, pos.y);
-            if map.visible[idx] && pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y {
+            if map.visible[idx] && pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y && object.floor == floor {
                 render_list.push(object)
             }
         }
@@ -76,7 +76,8 @@ fn batch_ui_draws() {
 fn get_tile_render(tile: &TileClass) -> (FontCharType, ColorPair) {
     match tile {
         TileClass::Floor => (46, ColorPair::new(WHITE,BLACK)),
-        TileClass::Wall => (35, ColorPair::new(BLACK,DARK_SLATE))
+        TileClass::Wall => (35, ColorPair::new(BLACK,DARK_SLATE)),
+        TileClass::DownStair => (62, ColorPair::new(GREY70,GREY99)),
     }
 }
 

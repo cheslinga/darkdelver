@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub enum Actions {
     MoveUp,MoveDown,MoveLeft,MoveRight,
     MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
+    TryGoDown,
     Wait,
 }
 
@@ -50,14 +51,16 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N
                 => process_action(gs, Actions::MoveDownRight),
 
-            VirtualKeyCode::Numpad5 | VirtualKeyCode::Period
-            => process_action(gs, Actions::Wait),
+            VirtualKeyCode::Numpad5
+                => process_action(gs, Actions::Wait),
 
             VirtualKeyCode::Escape => {
                 gs.menu = Some(Menu::pause_menu());
                 gs.con_status = ContextStatus::PauseMenu;
                 gs.refresh_con = true;
             },
+
+            VirtualKeyCode::Period => process_action(gs, Actions::TryGoDown),
 
             _ => {}
         }
@@ -94,6 +97,8 @@ fn process_action(gs: &mut State, action: Actions) {
         Actions::MoveUpRight => try_move_player(gs, DL_UP + DL_RIGHT),
         Actions::MoveDownLeft => try_move_player(gs, DL_DOWN + DL_LEFT),
         Actions::MoveDownRight => try_move_player(gs, DL_DOWN + DL_RIGHT),
+
+        Actions::TryGoDown => try_go_downstairs(gs)
     };
     gs.refresh_con = true;
     gs.proc = true;
@@ -121,7 +126,7 @@ fn try_attack_player(gs: &mut State, dest: &mut Point) -> bool {
 
     for obj in all.iter_mut() {
         if let Object { pos: Some(pos), tag: Some(tag), health: Some(_), .. } = obj {
-            if pos == dest && tag == &mut ActorTag::Enemy {
+            if pos == dest && obj.floor == player[0].floor && tag == &mut ActorTag::Enemy {
                 target = Some(obj);
             }
         }
@@ -132,5 +137,21 @@ fn try_attack_player(gs: &mut State, dest: &mut Point) -> bool {
         true
     } else {
         false
+    }
+}
+
+//Attempts to walk down a downward staircase
+fn try_go_downstairs(gs: &mut State) -> bool {
+    let map = &gs.world.active_map;
+    let player = &gs.world.objects[0];
+
+    let pos = player.pos.unwrap();
+    if map.tiles[map.index(pos.x, pos.y)] == TileClass::DownStair {
+        console::log(format!("Descending to level {}...", gs.world.depth + 1));
+        gs.world.descend_to_next();
+        return true
+    } else {
+        console::log("No stairs to descend.");
+        return false
     }
 }

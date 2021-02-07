@@ -6,6 +6,7 @@ pub struct Object {
     pub name: Option<String>,
     pub tag: Option<ActorTag>,
     pub pos: Option<Point>,
+    pub floor: i32,
     pub render: Option<Render>,
     pub viewshed: Option<Viewshed>,
     pub block_tile: bool,
@@ -17,6 +18,7 @@ pub struct Object {
 impl Object {
     pub fn blank() -> Object {
         Object {
+            floor: 1,
             block_tile: false,
             ..Default::default()
         }
