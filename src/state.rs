@@ -200,9 +200,11 @@ fn exec_all_systems(gs: &mut State) {
             gs.turn_state = TurnState::Player;
         }
 
+        update_player_memory(&mut gs.world.objects);
+
         //Set the turn state on a game over event.
         if gs.gameover {
-            console::log("You have died. Press Enter or R to return to the main menu.");
+            console::log(format!("You have died on level {}. Press Enter or R to return to the main menu.", gs.world.depth));
             gs.turn_state = TurnState::GameOver;
             gs.gameover = false;
         }

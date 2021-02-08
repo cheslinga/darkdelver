@@ -40,21 +40,36 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     let offset = Point::new(camera.min_x, camera.min_y);
 
     //Grab all objects that are drawable and have a position (force the player in at the end)
-    let mut render_list: Vec<&Object> = Vec::new();
+    let mut render_list: Vec<(&Object, bool)> = Vec::new();
     for object in objects.iter() {
         if let Object{pos: Some(_), render: Some(_), ..} = object {
             let pos = object.pos.as_ref().unwrap();
             let idx = map.index(pos.x, pos.y);
-            if map.visible[idx] && pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y && object.floor == floor {
-                render_list.push(object)
+            if pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y && object.floor == floor {
+                if map.visible[idx] {
+                    render_list.push((object, true))
+                } else if map.revealed[idx] && object.player_mem.seen {
+                    render_list.push((object, false))
+                }
             }
         }
     }
 
-    render_list.sort_by_key(|o| o.render.as_ref().unwrap().order);
+    render_list.sort_by_key(|o| o.0.render.as_ref().unwrap().order);
     for obj in render_list.iter() {
-        let pos = obj.pos.unwrap();
-        let render = obj.render.as_ref().unwrap();
+        let pos: Point;
+        let mut render: Render;
+
+        if obj.1 {
+            pos = obj.0.pos.unwrap();
+            render = obj.0.render.unwrap();
+        }
+        else {
+            pos = obj.0.player_mem.last_pos.unwrap();
+            render = obj.0.render.unwrap();
+            render.color = ColorPair::new(GREY30, BLACK);
+        }
+
         batch.set(pos - offset, render.color, render.glyph);
     }
 

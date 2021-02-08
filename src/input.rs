@@ -51,7 +51,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N
                 => process_action(gs, Actions::MoveDownRight),
 
-            VirtualKeyCode::Numpad5
+            VirtualKeyCode::Numpad5 | VirtualKeyCode::Period
                 => process_action(gs, Actions::Wait),
 
             VirtualKeyCode::Escape => {
@@ -60,7 +60,8 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
                 gs.refresh_con = true;
             },
 
-            VirtualKeyCode::Period => process_action(gs, Actions::TryGoDown),
+            VirtualKeyCode::Slash
+                => process_action(gs, Actions::TryGoDown),
 
             _ => {}
         }

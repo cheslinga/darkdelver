@@ -8,6 +8,7 @@ pub struct Object {
     pub pos: Option<Point>,
     pub floor: i32,
     pub render: Option<Render>,
+    pub player_mem: PlayerMemory,
     pub viewshed: Option<Viewshed>,
     pub block_tile: bool,
     pub initiative: Option<u8>,
@@ -20,6 +21,7 @@ impl Object {
         Object {
             floor: 1,
             block_tile: false,
+            player_mem: PlayerMemory { seen: false, last_pos: None },
             ..Default::default()
         }
     }
@@ -39,7 +41,7 @@ impl Default for ActorTag {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct Render {
     pub glyph: FontCharType,
     pub color: ColorPair,
@@ -87,4 +89,13 @@ impl Damage {
 
         return dmg
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PlayerMemory {
+    pub seen: bool,
+    pub last_pos: Option<Point>
+}
+impl Default for PlayerMemory {
+    fn default() -> Self { PlayerMemory { seen: false, last_pos: None } }
 }
