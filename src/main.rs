@@ -10,6 +10,7 @@ mod spawn;
 mod state;
 mod systems;
 mod actions;
+mod logs;
 
 pub mod prelude {
     pub use crate::camera::*;
@@ -23,6 +24,7 @@ pub mod prelude {
     pub use crate::state::*;
     pub use crate::systems::*;
     pub use crate::actions::*;
+    pub use crate::logs::*;
     pub use bracket_lib::prelude::*;
     pub use std::cmp::Reverse;
 

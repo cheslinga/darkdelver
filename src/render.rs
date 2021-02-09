@@ -1,10 +1,10 @@
 use crate::prelude::*;
 
 //Runs all draw batching functions;
-pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>, floor: i32) {
+pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>, logs: &LogBuffer, floor: i32) {
     batch_map_draws(map, camera);
     batch_entity_draws(objects, map, camera, floor);
-    batch_ui_draws();
+    batch_ui_draws(logs);
 }
 
 //Adds all map tiles to the rendering batch.
@@ -76,12 +76,16 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     batch.submit(5000).expect("Failed to batch entity draw");
 }
 
-fn batch_ui_draws() {
+fn batch_ui_draws(logs: &LogBuffer) {
     let mut batch = DrawBatch::new();
     batch.target(0);
 
     batch.draw_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
     batch.draw_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
+
+    let mut tb = TextBlock::new(1, CONSOLE_H - UI_CUTOFF.y + 1, CONSOLE_W - UI_CUTOFF.x - 2, UI_CUTOFF.y - 2);
+    tb.print(&logs.format());
+    tb.render_to_draw_batch(&mut *batch);
 
     batch.submit(10000).expect("Failed to batch UI draw");
 }

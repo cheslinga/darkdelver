@@ -16,10 +16,22 @@ pub struct State {
     pub gameover: bool,
     pub exit: bool,
     pub con_status: ContextStatus,
-    pub refresh_con: bool
+    pub refresh_con: bool,
+    pub logs: LogBuffer
 }
 impl State {
     pub fn init() -> State {
+        let mut lbuf = LogBuffer::new();
+        let welcome_msg1 = LogMessage::new()
+            .add_part("Welcome to", ColorPair::new(WHITE,BLACK))
+            .add_part("Darkdelver!", ColorPair::new(RED, BLACK));
+        lbuf.push(welcome_msg1);
+        let welcome_msg2 = LogMessage::new()
+            .add_part("Are you -", ColorPair::new(WHITE,BLACK))
+            .add_part("The Player", ColorPair::new(YELLOW, BLACK))
+            .add_part("- prepared to die?", ColorPair::new(WHITE,BLACK));
+        lbuf.push(welcome_msg2);
+
         State {
             world: World::empty(),
             turn_state: TurnState::Player,
@@ -30,6 +42,7 @@ impl State {
             exit: false,
             con_status: ContextStatus::MainMenu,
             refresh_con: true,
+            logs: lbuf
         }
     }
     fn handle_menu_actions(&mut self) {
@@ -77,7 +90,7 @@ impl GameState for State {
                 //Redraw to the console if it needs to be refreshed
                 if self.refresh_con {
                     con.cls();
-                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, self.world.depth);
+                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, &self.logs, self.world.depth);
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;
                 }
@@ -113,7 +126,7 @@ pub struct World {
     pub active_map: Map,
     pub last_map: Option<Map>,
     pub depth: i32,
-    pub camera: Camera
+    pub camera: Camera,
 }
 impl World {
     pub fn empty() -> World {
@@ -123,7 +136,7 @@ impl World {
             active_map: Map::new(0,0),
             last_map: None,
             depth: 0,
-            camera: Camera::new(Point::zero())
+            camera: Camera::new(Point::zero()),
         }
     }
     pub fn new_game() -> World {
@@ -139,7 +152,7 @@ impl World {
             active_map: mapgen.map,
             last_map: None,
             depth: 1,
-            camera: Camera::new(startpos)
+            camera: Camera::new(startpos),
         };
 
         world.objects.push(player);
@@ -184,7 +197,7 @@ fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         process_fov(&mut gs.world.objects, &mut gs.world.active_map);
         update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
-        proc_all_wounds(&mut gs.world.objects, &mut gs.gameover);
+        proc_all_wounds(&mut gs.world.objects, &mut gs.logs, &mut gs.gameover);
 
         //Check if the player's turn was passed
         if gs.passed {
@@ -196,7 +209,7 @@ fn exec_all_systems(gs: &mut State) {
         if gs.turn_state == TurnState::AI {
             process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
             update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
-            proc_all_wounds(&mut gs.world.objects, &mut gs.gameover);
+            proc_all_wounds(&mut gs.world.objects, &mut gs.logs, &mut gs.gameover);
             gs.turn_state = TurnState::Player;
         }
 
@@ -204,7 +217,12 @@ fn exec_all_systems(gs: &mut State) {
 
         //Set the turn state on a game over event.
         if gs.gameover {
-            console::log(format!("You have died on level {}. Press Enter or R to return to the main menu.", gs.world.depth));
+            gs.logs.update_logs(LogMessage::new()
+                .add_part(format!("You died on level {}.", gs.world.depth), ColorPair::new(RED, BLACK))
+            );
+            gs.logs.update_logs(LogMessage::new()
+                .add_part("Press Enter or R to return to the main menu.", ColorPair::new(WHITE, BLACK))
+            );
             gs.turn_state = TurnState::GameOver;
             gs.gameover = false;
         }

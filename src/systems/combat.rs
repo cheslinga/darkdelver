@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn proc_all_wounds(objects: &mut Vec<Object>, player_death: &mut bool) {
+pub fn proc_all_wounds(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_death: &mut bool) {
     let mut kill_list: Vec<usize> = Vec::new();
     let mut woundlist: InitList = InitList::new();
 
@@ -20,14 +20,20 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, player_death: &mut bool) {
                 for wound in health.wounds.iter() {
                     health.current -= wound;
                     total += wound;
-                }
-                console::log(format!("{} takes {} damage.", obj.name.as_ref().unwrap(), total)); //TODO: Replace with actual on-screen logging
+                } //total
+                logs.update_logs(LogMessage::new()
+                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, BLACK))
+                    .add_part(format!("takes {} damage.", total), ColorPair::new(WHITE, BLACK))
+                );
                 health.wounds.clear();
             }
             //If it should be dead, make sure it gets killed at the end
             if health.current <= 0 {
                 kill_list.push(id);
-                console::log(format!("{} has been slain.", obj.name.as_ref().unwrap())); //TODO: Replace with actual on-screen logging
+                logs.update_logs(LogMessage::new()
+                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, BLACK))
+                    .add_part("has been slain.", ColorPair::new(WHITE, BLACK))
+                );
 
                 if let Object { tag: Some(tag), .. } = obj {
                     if tag == &mut ActorTag::Player {
