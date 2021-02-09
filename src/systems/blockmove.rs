@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn update_blocked_tiles(objects: &Vec<Object>, map: &mut Map) {
+pub fn update_blocked_tiles(objects: &Vec<Object>, map: &mut Map, floor: i32) {
     for b in map.objblocked.iter_mut() {
         *b = false;
     }
@@ -10,7 +10,7 @@ pub fn update_blocked_tiles(objects: &Vec<Object>, map: &mut Map) {
             let pos = &obj.pos.unwrap();
             let block = &obj.block_tile;
 
-            if *block {
+            if *block && obj.floor == floor {
                 let idx = map.index(pos.x, pos.y);
                 map.objblocked[idx] = true;
             }

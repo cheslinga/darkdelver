@@ -196,7 +196,7 @@ impl World {
 fn exec_all_systems(gs: &mut State) {
     if gs.proc {
         process_fov(&mut gs.world.objects, &mut gs.world.active_map);
-        update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
+        update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map, gs.world.depth);
         proc_all_wounds(&mut gs.world.objects, &mut gs.logs, &mut gs.gameover);
 
         //Check if the player's turn was passed
@@ -207,8 +207,8 @@ fn exec_all_systems(gs: &mut State) {
 
         //Run any stuff for the AI if it's the AI's turn
         if gs.turn_state == TurnState::AI {
-            process_ai(&mut gs.world.objects, &mut gs.world.active_map, &mut gs.world.rng);
-            update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map);
+            process_ai(&mut gs.world.objects, &mut gs.world.active_map, gs.world.depth, &mut gs.world.rng);
+            update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map, gs.world.depth);
             proc_all_wounds(&mut gs.world.objects, &mut gs.logs, &mut gs.gameover);
             gs.turn_state = TurnState::Player;
         }

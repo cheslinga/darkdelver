@@ -59,7 +59,7 @@ pub mod prelude {
 use crate::prelude::*;
 
 fn main() {
-    match main_loop(build_console(1024, 768), State::init()) {
+    match main_loop(build_console(1280, 720), State::init()) {
         Ok(_) => {}
         Err(e) => panic!("Could not initialize due to a fatal error:\n{}", e),
     }

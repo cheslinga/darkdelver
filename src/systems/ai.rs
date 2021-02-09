@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn process_ai(objects: &mut Vec<Object>, map: &mut Map, rng: &mut RandomNumberGenerator) {
+pub fn process_ai(objects: &mut Vec<Object>, map: &mut Map, floor: i32, rng: &mut RandomNumberGenerator) {
     let (player, all) = objects.split_at_mut(1);
     let player_pos = player[0].pos.unwrap();
     let mut proclist: InitList = InitList::new();
@@ -16,7 +16,7 @@ pub fn process_ai(objects: &mut Vec<Object>, map: &mut Map, rng: &mut RandomNumb
 
     for unit in proclist.iter() {
         basic_enemy_ai(unit.0, objects, map, rng, player_pos);
-        update_blocked_tiles(objects, map);
+        update_blocked_tiles(objects, map, floor);
     }
 }
 
