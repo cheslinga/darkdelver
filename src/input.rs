@@ -155,7 +155,7 @@ fn try_go_downstairs(gs: &mut State) -> bool {
         return true
     } else {
         gs.logs.update_logs(LogMessage::new()
-            .add_part("No stairs to descend!", ColorPair::new(WHITE, BLACK))
+            .add_part("No stairs to descend!", ColorPair::new(GREY60, BLACK))
         );
         return false
     }

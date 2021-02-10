@@ -82,6 +82,7 @@ fn batch_ui_draws(logs: &LogBuffer) {
 
     batch.draw_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
     batch.draw_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
+    batch.print(Point::new(3, CONSOLE_H - UI_CUTOFF.y), "Logs");
 
     let mut tb = TextBlock::new(1, CONSOLE_H - UI_CUTOFF.y + 1, CONSOLE_W - UI_CUTOFF.x - 2, UI_CUTOFF.y - 2);
     tb.print(&logs.format());

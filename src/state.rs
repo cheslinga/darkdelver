@@ -21,17 +21,6 @@ pub struct State {
 }
 impl State {
     pub fn init() -> State {
-        let mut lbuf = LogBuffer::new();
-        let welcome_msg1 = LogMessage::new()
-            .add_part("Welcome to", ColorPair::new(WHITE,BLACK))
-            .add_part("Darkdelver!", ColorPair::new(RED, BLACK));
-        lbuf.push(welcome_msg1);
-        let welcome_msg2 = LogMessage::new()
-            .add_part("Are you -", ColorPair::new(WHITE,BLACK))
-            .add_part("The Player", ColorPair::new(YELLOW, BLACK))
-            .add_part("- prepared to die?", ColorPair::new(WHITE,BLACK));
-        lbuf.push(welcome_msg2);
-
         State {
             world: World::empty(),
             turn_state: TurnState::Player,
@@ -42,7 +31,7 @@ impl State {
             exit: false,
             con_status: ContextStatus::MainMenu,
             refresh_con: true,
-            logs: lbuf
+            logs: LogBuffer::new()
         }
     }
     fn handle_menu_actions(&mut self) {
@@ -50,9 +39,15 @@ impl State {
             match selection {
                 MenuSelection::NewGame => {
                     self.world = World::new_game();
+                    self.logs.clear();
                     self.con_status = ContextStatus::InGame;
                     self.refresh_con = true;
                     self.proc = true;
+
+                    let welcome_msg = LogMessage::new()
+                        .add_part("Your adventure begins now. ", ColorPair::new(WHITE,BLACK))
+                        .add_part("Prepare to die...", ColorPair::new(RED, BLACK));
+                    self.logs.push(welcome_msg);
                 },
                 MenuSelection::SaveGame => {
                     export_world(&self.world);
@@ -61,6 +56,7 @@ impl State {
                 },
                 MenuSelection::LoadGame => {
                     load_world(self);
+                    self.logs.clear();
                     self.con_status = ContextStatus::InGame;
                     self.refresh_con = true;
                 },
@@ -218,10 +214,14 @@ fn exec_all_systems(gs: &mut State) {
         //Set the turn state on a game over event.
         if gs.gameover {
             gs.logs.update_logs(LogMessage::new()
-                .add_part(format!("You died on level {}.", gs.world.depth), ColorPair::new(RED, BLACK))
+                .add_part("Press", ColorPair::new(WHITE, BLACK))
+                .add_part("Enter", ColorPair::new(LIME_GREEN, BLACK))
+                .add_part("or", ColorPair::new(WHITE, BLACK))
+                .add_part("R", ColorPair::new(LIME_GREEN, BLACK))
+                .add_part("to return to the main menu.", ColorPair::new(WHITE, BLACK))
             );
             gs.logs.update_logs(LogMessage::new()
-                .add_part("Press Enter or R to return to the main menu.", ColorPair::new(WHITE, BLACK))
+                .add_part(format!("You have perished on level {}.", gs.world.depth), ColorPair::new(BLACK, RED))
             );
             gs.turn_state = TurnState::GameOver;
             gs.gameover = false;
