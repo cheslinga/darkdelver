@@ -22,8 +22,8 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_d
                     total += wound;
                 } //total
                 logs.update_logs(LogMessage::new()
-                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, BLACK))
-                    .add_part(format!("takes {} damage.", total), ColorPair::new(WHITE, BLACK))
+                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, GREY10))
+                    .add_part(format!("takes {} damage.", total), ColorPair::new(WHITE, GREY10))
                 );
                 health.wounds.clear();
             }
@@ -31,8 +31,8 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_d
             if health.current <= 0 {
                 kill_list.push(id);
                 logs.update_logs(LogMessage::new()
-                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, BLACK))
-                    .add_part("has been slain.", ColorPair::new(WHITE, BLACK))
+                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, GREY10))
+                    .add_part("has been slain.", ColorPair::new(WHITE, GREY10))
                 );
 
                 if let Object { tag: Some(tag), .. } = obj {

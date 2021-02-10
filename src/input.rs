@@ -149,13 +149,13 @@ fn try_go_downstairs(gs: &mut State) -> bool {
     let pos = player.pos.unwrap();
     if map.tiles[map.index(pos.x, pos.y)] == TileClass::DownStair {
         gs.logs.update_logs(LogMessage::new()
-            .add_part(format!("Descending to level {}...", gs.world.depth + 1), ColorPair::new(BLACK, WHITE))
+            .add_part(format!("Descending to level {}...", gs.world.depth + 1), ColorPair::new(GREY13, WHITE))
         );
         gs.world.descend_to_next();
         return true
     } else {
         gs.logs.update_logs(LogMessage::new()
-            .add_part("No stairs to descend!", ColorPair::new(GREY60, BLACK))
+            .add_part("No stairs to descend!", ColorPair::new(GREY65, GREY10))
         );
         return false
     }

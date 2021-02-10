@@ -44,10 +44,10 @@ impl State {
                     self.refresh_con = true;
                     self.proc = true;
 
-                    let welcome_msg = LogMessage::new()
-                        .add_part("Your adventure begins now. ", ColorPair::new(WHITE,BLACK))
-                        .add_part("Prepare to die...", ColorPair::new(RED, BLACK));
-                    self.logs.push(welcome_msg);
+                    self.logs.update_logs(LogMessage::new()
+                        .add_part("Your adventure begins now. ", ColorPair::new(WHITE,GREY10))
+                        .add_part("Prepare to die...", ColorPair::new(RED, GREY10))
+                    );
                 },
                 MenuSelection::SaveGame => {
                     export_world(&self.world);
@@ -214,11 +214,11 @@ fn exec_all_systems(gs: &mut State) {
         //Set the turn state on a game over event.
         if gs.gameover {
             gs.logs.update_logs(LogMessage::new()
-                .add_part("Press", ColorPair::new(WHITE, BLACK))
-                .add_part("Enter", ColorPair::new(LIME_GREEN, BLACK))
-                .add_part("or", ColorPair::new(WHITE, BLACK))
-                .add_part("R", ColorPair::new(LIME_GREEN, BLACK))
-                .add_part("to return to the main menu.", ColorPair::new(WHITE, BLACK))
+                .add_part("Press", ColorPair::new(WHITE, GREY10))
+                .add_part("Enter", ColorPair::new(LIME_GREEN, GREY10))
+                .add_part("or", ColorPair::new(WHITE, GREY10))
+                .add_part("R", ColorPair::new(LIME_GREEN, GREY10))
+                .add_part("to return to the main menu.", ColorPair::new(WHITE, GREY10))
             );
             gs.logs.update_logs(LogMessage::new()
                 .add_part(format!("You have perished on level {}.", gs.world.depth), ColorPair::new(BLACK, RED))
