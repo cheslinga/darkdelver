@@ -4,7 +4,7 @@ use crate::prelude::*;
 pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>, logs: &LogBuffer, floor: i32) {
     batch_map_draws(map, camera);
     batch_entity_draws(objects, map, camera, floor);
-    batch_ui_draws(logs);
+    batch_ui_draws(&objects[0], logs);
 }
 
 //Adds all map tiles to the rendering batch.
@@ -76,11 +76,26 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     batch.submit(5000).expect("Failed to batch entity draw");
 }
 
-fn batch_ui_draws(logs: &LogBuffer) {
+fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
     let mut batch = DrawBatch::new();
     batch.target(0);
 
     batch.draw_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
+    batch.print(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 0), "Stats");
+
+    if player.tag.as_ref().unwrap() == &ActorTag::Player {
+        let health = player.health.as_ref().unwrap().current;
+        let max = player.health.as_ref().unwrap().max;
+
+        let percent = ((health as f32 / max as f32) * 100.0).round() as i32;
+        let colors = if percent <= 25 { ColorPair::new(BLACK, RED) }
+                        else if percent <= 50 { ColorPair::new(RED, BLACK) }
+                        else if percent <= 75 { ColorPair::new(YELLOW, BLACK) }
+                        else { ColorPair::new(WHITE, BLACK) };
+        batch.print(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 2), "Health:");
+        batch.print_color(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 3), format!("{}/{}", health, max), colors);
+    }
+
     batch.draw_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
     batch.print(Point::new(3, CONSOLE_H - UI_CUTOFF.y), "Logs");
 
