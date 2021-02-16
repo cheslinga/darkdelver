@@ -5,12 +5,13 @@ use serde::{Serialize, Deserialize};
 pub enum TurnState { Player, AI, GameOver }
 
 #[derive(PartialEq)]
-pub enum ContextStatus{ InGame, MainMenu, PauseMenu }
+pub enum ContextStatus{ InGame, InventoryOpen, MainMenu, PauseMenu }
 
 pub struct State {
     pub world: World,
     pub turn_state: TurnState,
     pub menu: Option<Menu>,
+    pub inv: Option<InventoryMenu>,
     pub proc: bool,
     pub passed: bool,
     pub gameover: bool,
@@ -25,6 +26,7 @@ impl State {
             world: World::empty(),
             turn_state: TurnState::Player,
             menu: Some(Menu::main_menu()),
+            inv: None,
             proc: true,
             passed: false,
             gameover: false,
@@ -79,7 +81,7 @@ impl GameState for State {
 
         match self.con_status {
             //If the game is in it's normal running state
-            ContextStatus::InGame => {
+            ContextStatus::InGame | ContextStatus::InventoryOpen => {
                 //Run all systems
                 exec_all_systems(self);
 
@@ -87,6 +89,7 @@ impl GameState for State {
                 if self.refresh_con {
                     con.cls();
                     batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, &self.logs, self.world.depth);
+                    if self.con_status == ContextStatus::InventoryOpen { batch_inventory_menu(self.inv.as_ref().unwrap()); }
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;
                 }
@@ -139,8 +142,7 @@ impl World {
         let mut rng = RandomNumberGenerator::new();
         let mapgen = MapGenerator::random_rooms_build(60, 60, &mut rng);
 
-        let player = spawn_player(mapgen.rooms[0].center());
-        let startpos = player.pos.unwrap();
+        let startpos = mapgen.rooms[0].center();
 
         let mut world = World {
             rng,
@@ -151,7 +153,13 @@ impl World {
             camera: Camera::new(startpos),
         };
 
-        world.objects.push(player);
+        let player = spawn_player(startpos);
+        world.objects.insert(0, player);
+
+        let start_equip: Vec<Object> = get_starting_equip();
+        for item in start_equip.into_iter() {
+            world.objects.push(item);
+        }
 
         for room in mapgen.rooms.iter().skip(1) {
             world.objects.push(make_beast(room.center(), 1))
@@ -176,11 +184,19 @@ impl World {
             self.objects.push(make_beast(room.center(), self.depth))
         }
 
-        //Clean up any objects that are 2 floors above
+        //Clean up any objects that are 2 floors above, but are not in any inventory
         let mut removelist: Vec<usize> = Vec::new();
         for (i, obj) in self.objects.iter().enumerate() {
-            if obj.floor < self.depth - 1 {
+            if obj.floor < self.depth - 1 && obj.in_inventory.is_none() {
                 removelist.push(i);
+            }
+        }
+        //Second pass for item inventory ownership; delete items on things that are to be deleted
+        for (i, obj) in self.objects.iter().enumerate() {
+            if let Some(inv) = &obj.in_inventory {
+                if removelist.contains(&inv.owner_id) {
+                    removelist.push(i);
+                }
             }
         }
         for i in removelist.iter() {

@@ -11,6 +11,7 @@ pub enum Actions {
 pub fn player_input(gs: &mut State, con: &BTerm) {
     match gs.con_status {
         ContextStatus::InGame => ingame_input(gs, con),
+        ContextStatus::InventoryOpen => inventory_input(gs, con),
         ContextStatus::MainMenu |
         ContextStatus::PauseMenu => menu_input(gs, con),
     }
@@ -63,7 +64,26 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Slash
                 => process_action(gs, Actions::TryGoDown),
 
+            VirtualKeyCode::I => {
+                gs.inv = Some(InventoryMenu::new(&gs.world.objects));
+                gs.con_status = ContextStatus::InventoryOpen;
+                gs.refresh_con = true;
+            },
+
             _ => {}
+        }
+    }
+}
+
+fn inventory_input(gs: &mut State, con: &BTerm) {
+    if let Some(key) = con.key {
+        match key {
+            VirtualKeyCode::Escape => {
+                gs.inv = None;
+                gs.con_status = ContextStatus::InGame;
+                gs.refresh_con = true;
+            },
+            _ => {gs.refresh_con = true;}
         }
     }
 }

@@ -13,6 +13,8 @@ pub struct Object {
     pub block_tile: bool,
     pub initiative: Option<u8>,
 
+    pub in_inventory: Option<InInventory>,
+
     pub health: Option<Health>,
     pub damage: Option<Damage>
 }
@@ -98,4 +100,9 @@ pub struct PlayerMemory {
 }
 impl Default for PlayerMemory {
     fn default() -> Self { PlayerMemory { seen: false, last_pos: None } }
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct InInventory {
+    pub owner_id: usize
 }

@@ -11,6 +11,7 @@ mod state;
 mod systems;
 mod actions;
 mod logs;
+mod inventory;
 
 pub mod prelude {
     pub use crate::camera::*;
@@ -25,6 +26,7 @@ pub mod prelude {
     pub use crate::systems::*;
     pub use crate::actions::*;
     pub use crate::logs::*;
+    pub use crate::inventory::*;
     pub use bracket_lib::prelude::*;
     pub use std::cmp::Reverse;
 

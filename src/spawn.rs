@@ -66,3 +66,40 @@ pub fn make_corpse(pos: Point, floor: i32) -> Object {
         ..Default::default()
     }
 }
+
+pub fn get_starting_equip() -> Vec<Object> {
+    let mut items = Vec::new();
+
+    items.push(
+      Object {
+          name: Some("Silver Dagger".to_string()),
+          render: Some(Render {
+              glyph: 24,
+              color: ColorPair::new(GREY70, BLACK),
+              order: 99
+          }),
+          in_inventory: Some(InInventory {
+              owner_id: 0
+          }),
+          ..Default::default()
+      }
+    );
+    items.push(
+        Object {
+            name: Some("Potion of Mending".to_string()),
+            render: Some(Render {
+                glyph: 173,
+                color: ColorPair::new(LIME_GREEN, BLACK),
+                order: 99
+            }),
+            in_inventory: Some(InInventory {
+                owner_id: 0
+            }),
+            ..Default::default()
+        }
+    );
+
+    return items
+}
+
+

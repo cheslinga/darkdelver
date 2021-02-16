@@ -80,10 +80,11 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
     let mut batch = DrawBatch::new();
     batch.target(0);
 
-    batch.draw_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
+    //Draw the stats box
+    batch.draw_double_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
     batch.print(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 0), "Stats");
 
-    if player.tag.as_ref().unwrap() == &ActorTag::Player {
+    if let Some(ActorTag::Player) = player.tag {
         let health = player.health.as_ref().unwrap().current;
         let max = player.health.as_ref().unwrap().max;
 
@@ -96,7 +97,8 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
         batch.print_color(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 3), format!("{}/{}", health, max), colors);
     }
 
-    batch.draw_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
+    //Draw the log box
+    batch.draw_double_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
     batch.print(Point::new(3, CONSOLE_H - UI_CUTOFF.y), "Logs");
 
     let mut tb = TextBlock::new(1, CONSOLE_H - UI_CUTOFF.y + 1, CONSOLE_W - UI_CUTOFF.x - 2, UI_CUTOFF.y - 2);
