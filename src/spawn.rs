@@ -72,11 +72,11 @@ pub fn get_starting_equip() -> Vec<Object> {
 
     items.push(
       Object {
-          name: Some("Silver Dagger".to_string()),
+          name: Some("Iron Longsword".to_string()),
           render: Some(Render {
               glyph: 24,
-              color: ColorPair::new(GREY70, BLACK),
-              order: 99
+              color: ColorPair::new(GREY75, BLACK),
+              order: 1
           }),
           in_inventory: Some(InInventory {
               owner_id: 0
@@ -86,11 +86,39 @@ pub fn get_starting_equip() -> Vec<Object> {
     );
     items.push(
         Object {
+            name: Some("Leather Jerkin".to_string()),
+            render: Some(Render {
+                glyph: 93,
+                color: ColorPair::new(DARK_KHAKI, BLACK),
+                order: 1
+            }),
+            in_inventory: Some(InInventory {
+                owner_id: 0
+            }),
+            ..Default::default()
+        }
+    );
+    items.push(
+        Object {
+            name: Some("Wooden Shield".to_string()),
+            render: Some(Render {
+                glyph: 79,
+                color: ColorPair::new(BURLYWOOD, BLACK),
+                order: 1
+            }),
+            in_inventory: Some(InInventory {
+                owner_id: 0
+            }),
+            ..Default::default()
+        }
+    );
+    items.push(
+        Object {
             name: Some("Potion of Mending".to_string()),
             render: Some(Render {
                 glyph: 173,
                 color: ColorPair::new(LIME_GREEN, BLACK),
-                order: 99
+                order: 1
             }),
             in_inventory: Some(InInventory {
                 owner_id: 0

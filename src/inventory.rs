@@ -42,6 +42,14 @@ impl InventoryMenu {
         //TEST STUFF:
         console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
     }
+    pub fn move_selection_up(&mut self) {
+        if self.selection as i16 - 1 < 0 { return }
+        else { self.selection -= 1 }
+    }
+    pub fn move_selection_down(&mut self) {
+        if self.selection + 1 >= self.items.len() { return }
+        else { self.selection += 1 }
+    }
 }
 impl Default for InventoryMenu {
     fn default() -> InventoryMenu {
