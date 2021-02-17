@@ -78,14 +78,58 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
 fn inventory_input(gs: &mut State, con: &BTerm) {
     if let Some(key) = con.key {
         match key {
-            VirtualKeyCode::Escape => {
-                gs.inv = None;
-                gs.con_status = ContextStatus::InGame;
-                gs.refresh_con = true;
-            },
+            VirtualKeyCode::Escape => { clear_inv(gs) },
+            VirtualKeyCode::Return => { trigger_selection(gs) },
+            VirtualKeyCode::A => { trigger_set_selection(0,gs) },
+            VirtualKeyCode::B => { trigger_set_selection(1,gs) },
+            VirtualKeyCode::C => { trigger_set_selection(2,gs) },
+            VirtualKeyCode::D => { trigger_set_selection(3,gs) },
+            VirtualKeyCode::E => { trigger_set_selection(4,gs) },
+            VirtualKeyCode::F => { trigger_set_selection(5,gs) },
+            VirtualKeyCode::G => { trigger_set_selection(6,gs) },
+            VirtualKeyCode::H => { trigger_set_selection(7,gs) },
+            VirtualKeyCode::I => { trigger_set_selection(8,gs) },
+            VirtualKeyCode::J => { trigger_set_selection(9,gs) },
+            VirtualKeyCode::K => { trigger_set_selection(10,gs) },
+            VirtualKeyCode::L => { trigger_set_selection(11,gs) },
+            VirtualKeyCode::M => { trigger_set_selection(12,gs) },
+            VirtualKeyCode::N => { trigger_set_selection(13,gs) },
+            VirtualKeyCode::O => { trigger_set_selection(14,gs) },
+            VirtualKeyCode::P => { trigger_set_selection(15,gs) },
+            VirtualKeyCode::Q => { trigger_set_selection(16,gs) },
+            VirtualKeyCode::R => { trigger_set_selection(17,gs) },
+            VirtualKeyCode::S => { trigger_set_selection(18,gs) },
+            VirtualKeyCode::T => { trigger_set_selection(19,gs) },
+            VirtualKeyCode::U => { trigger_set_selection(20,gs) },
+            VirtualKeyCode::V => { trigger_set_selection(21,gs) },
+            VirtualKeyCode::W => { trigger_set_selection(22,gs) },
+            VirtualKeyCode::X => { trigger_set_selection(23,gs) },
+            VirtualKeyCode::Y => { trigger_set_selection(24,gs) },
+            VirtualKeyCode::Z => { trigger_set_selection(25,gs) },
             _ => {gs.refresh_con = true;}
         }
     }
+}
+fn trigger_selection(gs: &mut State) {
+    let inv = &mut gs.inv.as_mut().unwrap();
+    let objs = &mut gs.world.objects;
+    inv.process_selection(objs);
+    clear_inv(gs);
+}
+fn trigger_set_selection(selection: usize, gs: &mut State) {
+    let inv = &mut gs.inv.as_mut().unwrap();
+    let objs = &mut gs.world.objects;
+
+    if selection >= inv.items.len() { return }
+    else { inv.selection = selection; }
+
+    inv.process_selection(objs);
+    clear_inv(gs);
+}
+fn clear_inv(gs: &mut State) {
+    gs.inv = None;
+    gs.con_status = ContextStatus::InGame;
+    gs.refresh_con = true;
 }
 
 fn menu_input(gs: &mut State, con: &BTerm) {
