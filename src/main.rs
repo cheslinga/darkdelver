@@ -12,6 +12,7 @@ mod systems;
 mod actions;
 mod logs;
 mod inventory;
+mod dbinterface;
 
 pub mod prelude {
     pub use crate::camera::*;
@@ -27,6 +28,7 @@ pub mod prelude {
     pub use crate::actions::*;
     pub use crate::logs::*;
     pub use crate::inventory::*;
+    pub use crate::dbinterface::*;
     pub use bracket_lib::prelude::*;
     pub use std::cmp::Reverse;
 
@@ -79,4 +81,16 @@ fn build_console(w: i32, h: i32) -> BTerm {
         .with_vsync(true)
         .build()
         .unwrap();
+}
+
+fn TEST_db() {
+    let conn = open_connection();
+    let objectvector = import_items_to_objects(&conn).unwrap();
+
+    for item in objectvector.iter() {
+        console::log(format!("Holy moly, I imported a {} from SQLite!", item.name.as_ref().unwrap()));
+        console::log(format!("It's even got {} as a glyph!", to_char(item.render.as_ref().unwrap().glyph as u8)));
+    }
+
+    conn.close();
 }

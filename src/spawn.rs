@@ -68,66 +68,12 @@ pub fn make_corpse(pos: Point, floor: i32) -> Object {
 }
 
 pub fn get_starting_equip() -> Vec<Object> {
-    let mut items = Vec::new();
+    let conn = open_connection();
+    let mut items = import_items_to_objects(&conn).unwrap();
+    conn.close();
 
-    items.push(
-      Object {
-          name: Some("Iron Longsword".to_string()),
-          render: Some(Render {
-              glyph: 24,
-              color: ColorPair::new(GREY75, BLACK),
-              order: 1
-          }),
-          in_inventory: Some(InInventory {
-              owner_id: 0
-          }),
-          ..Default::default()
-      }
-    );
-    items.push(
-        Object {
-            name: Some("Leather Jerkin".to_string()),
-            render: Some(Render {
-                glyph: 93,
-                color: ColorPair::new(DARK_KHAKI, BLACK),
-                order: 1
-            }),
-            in_inventory: Some(InInventory {
-                owner_id: 0
-            }),
-            ..Default::default()
-        }
-    );
-    items.push(
-        Object {
-            name: Some("Wooden Shield".to_string()),
-            render: Some(Render {
-                glyph: 79,
-                color: ColorPair::new(BURLYWOOD, BLACK),
-                order: 1
-            }),
-            in_inventory: Some(InInventory {
-                owner_id: 0
-            }),
-            ..Default::default()
-        }
-    );
-    items.push(
-        Object {
-            name: Some("Potion of Mending".to_string()),
-            render: Some(Render {
-                glyph: 173,
-                color: ColorPair::new(LIME_GREEN, BLACK),
-                order: 1
-            }),
-            in_inventory: Some(InInventory {
-                owner_id: 0
-            }),
-            ..Default::default()
-        }
-    );
-
+    for obj in items.iter_mut() {
+        obj.in_inventory = Some(InInventory{ owner_id: 0 })
+    }
     return items
 }
-
-

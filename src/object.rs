@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Default, Serialize, Deserialize)]
 pub struct Object {
     pub name: Option<String>,
+    pub db_imported: Option<u32>,
     pub tag: Option<ActorTag>,
     pub pos: Option<Point>,
     pub floor: i32,
@@ -21,6 +22,7 @@ pub struct Object {
 impl Object {
     pub fn blank() -> Object {
         Object {
+            db_imported: None,
             floor: 1,
             block_tile: false,
             player_mem: PlayerMemory { seen: false, last_pos: None },
