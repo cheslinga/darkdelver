@@ -18,18 +18,9 @@ pub fn open_connection() -> Connection {
 pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
     let mut objs: Vec<Object> = Vec::new();
     let mut command = conn.prepare(
-        "SELECT
-            *
-        FROM
-            Items T1
-        INNER JOIN
-            Renders T2
-        on
-            T1.render_id = T2.id
-        INNER JOIN
-            Interactions T3
-        on
-            T1.interactions_id = T3.id"
+        "SELECT * FROM Items T1
+            INNER JOIN Renders T2 on T1.render_id = T2.id
+            INNER JOIN Interactions T3 on T1.interactions_id = T3.id"
     ).unwrap();
 
     for item in command.query_map(params![], |row| {
@@ -40,8 +31,7 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
             render_fg: (row.get(8)?, row.get(9)?, row.get(10)?),
             render_bg: (row.get(11)?, row.get(12)?, row.get(13)?)
         })
-    }).ok()?
-    {
+    }).ok()? {
         if let Ok(exp) = item {
             let fg = RGBA::from_u8(exp.render_fg.0, exp.render_fg.1, exp.render_fg.2, 255);
             let bg = RGBA::from_u8(exp.render_bg.0, exp.render_bg.1, exp.render_bg.2, 255);
