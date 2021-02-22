@@ -42,7 +42,7 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     //Grab all objects that are drawable and have a position (force the player in at the end)
     let mut render_list: Vec<(&Object, bool)> = Vec::new();
     for object in objects.iter() {
-        if let Object{pos: Some(_), render: Some(_), ..} = object {
+        if object.pos.is_some() && object.render.is_some() {
             let pos = object.pos.as_ref().unwrap();
             let idx = map.index(pos.x, pos.y);
             if pos.x > camera.min_x && pos.x < camera.max_x && pos.y > camera.min_y && pos.y < camera.max_y && object.floor == floor {

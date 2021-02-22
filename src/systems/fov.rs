@@ -2,8 +2,7 @@ use crate::prelude::*;
 
 pub fn process_fov(objects: &mut Vec<Object>, map: &mut Map) {
     for obj in objects.iter_mut() {
-        if let Object { viewshed: Some(_), .. } = obj {
-            let view = &mut obj.viewshed.as_mut().unwrap();
+        if let Object { viewshed: Some(view), .. } = obj {
             let pos = &obj.pos.unwrap();
 
             if view.refresh {

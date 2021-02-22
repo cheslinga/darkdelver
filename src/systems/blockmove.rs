@@ -6,8 +6,7 @@ pub fn update_blocked_tiles(objects: &Vec<Object>, map: &mut Map, floor: i32) {
     }
 
     for obj in objects.iter() {
-        if let Object{ pos: Some(_), .. } = obj {
-            let pos = &obj.pos.unwrap();
+        if let Object{ pos: Some(pos), .. } = obj {
             let block = &obj.block_tile;
 
             if *block && obj.floor == floor {

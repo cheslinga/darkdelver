@@ -3,7 +3,7 @@ use crate::prelude::*;
 impl Object {
     //Attempts to move an object, modifying its position
     pub fn try_move(&mut self, dest: Point, map: &Map) {
-        if let Object { pos: Some(_), .. } = self {
+        if self.pos.is_some() {
             if !map.walkable(dest.x, dest.y) {
                 return
             }
