@@ -70,7 +70,7 @@ pub fn make_corpse(pos: Point, floor: i32) -> Object {
 pub fn get_starting_equip() -> Vec<Object> {
     let conn = open_connection();
     let mut items = import_items_to_objects(&conn).unwrap();
-    conn.close();
+    conn.close().expect("Connection to SQLite DB failed to close.");
 
     for obj in items.iter_mut() {
         obj.in_inventory = Some(InInventory{ owner_id: 0 })

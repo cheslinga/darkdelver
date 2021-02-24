@@ -12,7 +12,7 @@ struct ExportedObject {
 }
 
 pub fn open_connection() -> Connection {
-    return Connection::open(DB_FILEPATH).unwrap()
+    return Connection::open(DB_FILEPATH).expect("Connection to SQLite DB could not be opened. Please check the 'res/' folder for the file 'dd_raw.sqlite'.")
 }
 
 pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
