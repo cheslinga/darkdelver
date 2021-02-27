@@ -13,6 +13,7 @@ mod actions;
 mod logs;
 mod inventory;
 mod dbinterface;
+mod aidef;
 
 pub mod prelude {
     pub use crate::camera::*;
@@ -29,6 +30,7 @@ pub mod prelude {
     pub use crate::logs::*;
     pub use crate::inventory::*;
     pub use crate::dbinterface::*;
+    pub use crate::aidef::*;
     pub use bracket_lib::prelude::*;
     pub use std::cmp::Reverse;
 
@@ -57,6 +59,24 @@ pub mod prelude {
         //Sorts by descending initiative order
         fn sort(&mut self) {
             self.sort_by_key(|a| Reverse(a.1));
+        }
+    }
+
+    pub trait Neighbor {
+        fn get_neighbors(&self) -> Vec<Point>;
+    }
+    impl Neighbor for Point {
+        fn get_neighbors(&self) -> Vec<Point> {
+            return vec![
+                *self + DL_UP,
+                *self + DL_DOWN,
+                *self + DL_LEFT,
+                *self + DL_RIGHT,
+                *self + DL_UP + DL_LEFT,
+                *self + DL_UP + DL_RIGHT,
+                *self + DL_DOWN + DL_LEFT,
+                *self + DL_DOWN + DL_RIGHT
+            ]
         }
     }
 }

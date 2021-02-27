@@ -48,6 +48,8 @@ pub fn make_beast(pos: Point, depth: i32) -> Object {
         health: Some(Health::new(6)),
         damage: Some(Damage::new(1,3)),
 
+        ai: Some(AIClass::new()),
+
         ..Default::default()
     }
 }

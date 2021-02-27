@@ -215,12 +215,13 @@ fn exec_all_systems(gs: &mut State) {
         if gs.passed {
             gs.turn_state = TurnState::AI;
             gs.passed = false;
+            process_fov(&mut gs.world.objects, &mut gs.world.active_map);
         }
 
         //Run any stuff for the AI if it's the AI's turn
         if gs.turn_state == TurnState::AI {
             process_ai(&mut gs.world.objects, &mut gs.world.active_map, gs.world.depth, &mut gs.world.rng);
-            update_blocked_tiles(&gs.world.objects, &mut gs.world.active_map, gs.world.depth);
+            process_fov(&mut gs.world.objects, &mut gs.world.active_map);
             proc_all_wounds(&mut gs.world.objects, &mut gs.logs, &mut gs.gameover);
             gs.turn_state = TurnState::Player;
         }

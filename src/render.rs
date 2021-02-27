@@ -119,3 +119,25 @@ fn get_tile_render(tile: &TileClass) -> (FontCharType, ColorPair) {
 }
 
 
+/*
+//Uncomment this for heatmap visual testing because it's a pain in the ass to debug through the console
+
+fn batch_heatmaps_test(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: i32) {
+    let mut batch = DrawBatch::new();
+    batch.target(1);
+    let offset = Point::new(camera.min_x, camera.min_y);
+
+    for obj in objects.iter() {
+        if let Some(ai) = &obj.ai {
+            for node in ai.tgt_heatmap.nodes.iter() {
+                batch.set(*node - offset, ColorPair::new(YELLOW, BLACK), to_cp437('!'));
+            }
+            for node in ai.tgt_heatmap.old_nodes.iter() {
+                batch.set(*node - offset, ColorPair::new(ORANGE, BLACK), to_cp437('?'));
+            }
+        }
+    }
+
+    batch.submit(10000);
+}
+ */

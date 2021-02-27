@@ -17,7 +17,9 @@ pub struct Object {
     pub in_inventory: Option<InInventory>,
 
     pub health: Option<Health>,
-    pub damage: Option<Damage>
+    pub damage: Option<Damage>,
+
+    pub ai: Option<AIClass>
 }
 impl Object {
     pub fn blank() -> Object {
