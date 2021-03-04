@@ -58,12 +58,14 @@ impl Menu {
 }
 
 pub fn batch_main_menu(menu: &Menu) {
-    let mut batch = DrawBatch::new();
-    batch.target(1);
+    let mut bgbatch = DrawBatch::new();
+    let mut textbatch = DrawBatch::new();
+    bgbatch.target(0);
+    textbatch.target(1);
 
-    batch.print_color_centered(CONSOLE_H / 4, "Darkdelver", ColorPair::new(RED, BLACK));
+    textbatch.print_color_centered(CONSOLE_H / 4, "Darkdelver", ColorPair::new(RED, BLACK));
 
-    batch.print_color_centered(
+    textbatch.print_color_centered(
         CONSOLE_H - 3,
         "Copyright (C) 2021, Cole Heslinga",
         ColorPair::new(WHITE, BLACK),
@@ -84,27 +86,29 @@ pub fn batch_main_menu(menu: &Menu) {
         quit_pair = selected;
     }
 
-    batch.print_color(
-        Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 3),
+    textbatch.print_color(
+        Point::new(CONSOLE_W - 10, CONSOLE_H / 4 + 3),
         "New Game",
         newgame_pair,
     );
-    batch.print_color(
-        Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 5),
+    textbatch.print_color(
+        Point::new(CONSOLE_W - 10, CONSOLE_H / 4 + 5),
         "Load Game",
         loadgame_pair,
     );
-    batch.print_color(
-        Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 7),
+    textbatch.print_color(
+        Point::new(CONSOLE_W - 10, CONSOLE_H / 4 + 7),
         "Quit",
         quit_pair,
     );
 
-    batch.submit(0).expect("Failed to batch menu draw");
+    bgbatch.fill_region(Rect::with_exact(0,0,CONSOLE_W * 2,CONSOLE_H), ColorPair::new(BLACK,BLACK), 0);
+    bgbatch.submit(0).expect("Failed to batch menu draw");
+    textbatch.submit(0).expect("Failed to batch menu draw");
 }
 pub fn batch_pause_menu(menu: &Menu) {
-    let mut batch = DrawBatch::new();
-    batch.target(1);
+    let mut textbatch = DrawBatch::new();
+    textbatch.target(1);
 
     let unselected: ColorPair = ColorPair::new(WHITE, BLACK);
     let selected: ColorPair = ColorPair::new(YELLOW, GREY10);
@@ -124,26 +128,26 @@ pub fn batch_pause_menu(menu: &Menu) {
         quit_pair = selected;
     }
 
-    batch.print_color(
+    textbatch.print_color(
         Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 1),
         "Continue",
         continue_pair,
     );
-    batch.print_color(
+    textbatch.print_color(
         Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 3),
         "Save Game",
         savegame_pair,
     );
-    batch.print_color(
+    textbatch.print_color(
         Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 5),
         "Load Game",
         loadgame_pair,
     );
-    batch.print_color(
+    textbatch.print_color(
         Point::new(CONSOLE_W / 2 - 5, CONSOLE_H / 4 + 7),
         "Quit",
         quit_pair,
     );
 
-    batch.submit(0).expect("Failed to batch menu draw");
+    textbatch.submit(0).expect("Failed to batch menu draw");
 }

@@ -92,12 +92,13 @@ fn main() {
 fn build_console(w: i32, h: i32) -> BTerm {
     return BTermBuilder::new()
         .with_resource_path("res/")
-        .with_font("font.png", 16, 16)
+        .with_font("objects.png", 16, 16)
+        .with_font("text.png", 8, 16)
         .with_title("Darkdelver")
         .with_tile_dimensions(16, 16)
         .with_dimensions(w / 16, h / 16)
-        .with_simple_console(CONSOLE_W, CONSOLE_H, "font.png")
-        .with_sparse_console_no_bg(CONSOLE_W, CONSOLE_H, "font.png")
+        .with_simple_console(CONSOLE_W, CONSOLE_H, "objects.png")
+        .with_sparse_console(CONSOLE_W * 2, CONSOLE_H, "text.png")
         .with_vsync(true)
         .build()
         .unwrap();

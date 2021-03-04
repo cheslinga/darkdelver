@@ -62,13 +62,15 @@ impl Default for InventoryMenu {
 }
 
 pub fn batch_inventory_menu(menu: &InventoryMenu) {
-    let mut batch = DrawBatch::new();
-    batch.target(0);
+    let mut uibatch = DrawBatch::new();
+    let mut textbatch = DrawBatch::new();
+    uibatch.target(0);
+    textbatch.target(1);
 
     let menubox = Rect::with_size(2, 2, CONSOLE_W - UI_CUTOFF.x - 4, min(menu.items.len() as i32 + 1, 18));
-    batch.draw_double_box(menubox, ColorPair::new(GREY75, BLACK));
-    batch.print(Point::new(4, 2), "Inventory");
-    batch.print_color(Point::new(4, 2 + menubox.height()), "ESC to close", ColorPair::new(GOLD4,BLACK));
+    uibatch.draw_double_box(menubox, ColorPair::new(GREY75, BLACK));
+    textbatch.print(Point::new(8, 2), "Inventory");
+    textbatch.print_color(Point::new(8, 2 + menubox.height()), "ESC to close", ColorPair::new(GOLD4, BLACK));
 
     let mut y = menubox.y1 + 1;
     let mut ofs: u16 = 0;
@@ -78,18 +80,19 @@ pub fn batch_inventory_menu(menu: &InventoryMenu) {
             true => {ColorPair::new(BLACK,YELLOW)}
         };
         if y < menubox.y2 {
-            batch.set(Point::new(menubox.x1 + 5, y), *&item.render.color, item.render.glyph);
+            uibatch.set(Point::new(menubox.x1 + 5, y), *&item.render.color, item.render.glyph);
 
             //Sets the letter to display next to the item
-            batch.set(Point::new(menubox.x1 + 1, y), ColorPair::new(WHITE,BLACK), 40);
-            batch.set(Point::new(menubox.x1 + 2, y), ColorPair::new(GOLD2, BLACK), 97 + ofs);
-            batch.set(Point::new(menubox.x1 + 3, y), ColorPair::new(WHITE,BLACK), 41);
+            uibatch.set(Point::new(menubox.x1 + 1, y), ColorPair::new(WHITE, BLACK), 40);
+            uibatch.set(Point::new(menubox.x1 + 2, y), ColorPair::new(GOLD2, BLACK), 97 + ofs);
+            uibatch.set(Point::new(menubox.x1 + 3, y), ColorPair::new(WHITE, BLACK), 41);
 
-            batch.print_color(Point::new(menubox.x1 + 7, y), &item.name, line_color);
+            textbatch.print_color(Point::new(menubox.x1 * 2 + 14, y), &item.name, line_color);
             y += 1;
             ofs += 1;
         }
     }
 
-    batch.submit(11000).expect("Failed to batch inventory menu draw");
+    uibatch.submit(1100).expect("Failed to batch inventory menu draw");
+    textbatch.submit(16000).expect("Failed to batch inventory menu draw");
 }

@@ -28,6 +28,9 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
 
                 batch.set(pos - offset, colors, glyph);
             }
+            else {
+                batch.set(pos - offset, ColorPair::new(BLACK, BLACK), 0);
+            }
         }
     }
     batch.submit(0).expect("Failed to batch map draw");
@@ -77,12 +80,14 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
 }
 
 fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
-    let mut batch = DrawBatch::new();
-    batch.target(0);
+    let mut uibatch = DrawBatch::new();
+    let mut textbatch = DrawBatch::new();
+    uibatch.target(0);
+    textbatch.target(1);
 
     //Draw the stats box
-    batch.draw_double_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
-    batch.print(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 0), "Stats");
+    uibatch.draw_double_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));
+    textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 0), "Stats");
 
     if let Some(ActorTag::Player) = player.tag {
         let health = player.health.as_ref().unwrap().current;
@@ -93,19 +98,20 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
                         else if percent <= 50 { ColorPair::new(RED, BLACK) }
                         else if percent <= 75 { ColorPair::new(YELLOW, BLACK) }
                         else { ColorPair::new(WHITE, BLACK) };
-        batch.print(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 2), "Health:");
-        batch.print_color(Point::new(CONSOLE_W - UI_CUTOFF.x + 2, 3), format!("{}/{}", health, max), colors);
+        textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 2), "Health:");
+        textbatch.print_color(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 3), format!("{}/{}", health, max), colors);
     }
 
     //Draw the log box
-    batch.draw_double_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
-    batch.print(Point::new(3, CONSOLE_H - UI_CUTOFF.y), "Logs");
+    uibatch.draw_double_box(Rect::with_size(0, CONSOLE_H - UI_CUTOFF.y, CONSOLE_W - UI_CUTOFF.x - 1, UI_CUTOFF.y - 1), ColorPair::new(GREY75, BLACK));
+    textbatch.print(Point::new(12, CONSOLE_H - UI_CUTOFF.y), "Logs");
 
-    let mut tb = TextBlock::new(1, CONSOLE_H - UI_CUTOFF.y + 1, CONSOLE_W - UI_CUTOFF.x - 2, UI_CUTOFF.y - 2);
+    let mut tb = TextBlock::new(2, CONSOLE_H - UI_CUTOFF.y + 1, CONSOLE_W * 2 - UI_CUTOFF.x * 2 - 4, UI_CUTOFF.y - 2);
     tb.print(&logs.format());
-    tb.render_to_draw_batch(&mut *batch);
+    tb.render_to_draw_batch(&mut *textbatch);
 
-    batch.submit(10000).expect("Failed to batch UI draw");
+    uibatch.submit(10000).expect("Failed to batch UI draw");
+    textbatch.submit(15000).expect("Failed to batch UI draw");
 }
 
 //Returns glyph and color pair info for a tile.

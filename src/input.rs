@@ -108,9 +108,10 @@ fn inventory_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::X => { inv_trigger_set_select(23, gs) },
             VirtualKeyCode::Y => { inv_trigger_set_select(24, gs) },
             VirtualKeyCode::Z => { inv_trigger_set_select(25, gs) },
-            _ => {gs.refresh_con = true;}
+            _ => {}
         }
     }
+    gs.refresh_con = true;
 }
 fn inv_trigger_select(gs: &mut State) {
     let inv = &mut gs.inv.as_mut().unwrap();

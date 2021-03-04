@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-const MAX_WIDTH: usize = (CONSOLE_W - UI_CUTOFF.x - 2) as usize;
+const MAX_WIDTH: usize = (CONSOLE_W * 2 - UI_CUTOFF.x * 2 - 4) as usize;
 
 pub type LogBuffer = Vec<LogMessage>;
 
@@ -20,7 +20,6 @@ impl LogBufferTrait for LogBuffer {
                 builder.fg(message.colors[i].fg);
                 builder.append(part);
             }
-            //builder.ln();
         }
 
         return builder;
