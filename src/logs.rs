@@ -40,19 +40,19 @@ impl LogBufferTrait for LogBuffer {
         let mut last_color: ColorPair = ColorPair::new(WHITE, GREY10);
 
         for g in group_list.iter() {
-            if line_len + g.0.len() >= MAX_WIDTH {
+            if line_len + g.0.chars().count() >= MAX_WIDTH {
                 while line_len < MAX_WIDTH {
                     wip_message = wip_message.add_part(" ", last_color);
                     line_len += 1;
                 }
                 final_messages.insert(0, wip_message);
 
-                line_len = g.0.len();
+                line_len = g.0.chars().count();
                 wip_message = LogMessage::new().add_part(g.0.to_string(), g.1);
             }
             else {
                 wip_message = wip_message.add_part(g.0.to_string(), g.1);
-                line_len += g.0.len();
+                line_len += g.0.chars().count();
             }
             last_color = g.1;
         }
