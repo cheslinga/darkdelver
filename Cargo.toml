@@ -11,3 +11,6 @@ bracket-lib = { git = "https://github.com/thebracket/bracket-lib.git", features 
 serde = { version = "1.0.120", features = ["derive"] }
 serde_cbor = "0.11.1"
 rusqlite = { version = "0.24.2", features = ["bundled"] }
+
+[profile.release]
+lto = "thin" 
