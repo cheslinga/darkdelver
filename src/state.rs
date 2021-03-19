@@ -7,6 +7,24 @@ pub enum TurnState { Player, AI, GameOver }
 #[derive(PartialEq)]
 pub enum ContextStatus{ InGame, InventoryOpen, MainMenu, PauseMenu }
 
+pub struct MouseLocation {
+    current: Point,
+    prev: Point
+}
+impl MouseLocation {
+    pub fn new() -> MouseLocation { MouseLocation { current: Point::zero(), prev: Point::zero() } }
+    pub fn has_changed(&self) -> bool { return self.current != self.prev }
+    pub fn get_pos(&mut self, con: &mut BTerm) {
+        let ap = con.active_console;
+        con.set_active_console(OBJ_LAYER);
+
+        self.prev = self.current;
+        self.current = con.mouse_point();
+
+        con.set_active_console(ap);
+    }
+}
+
 pub struct State {
     pub world: World,
     pub turn_state: TurnState,
@@ -18,7 +36,8 @@ pub struct State {
     pub exit: bool,
     pub con_status: ContextStatus,
     pub refresh_con: bool,
-    pub logs: LogBuffer
+    pub logs: LogBuffer,
+    pub mouse_pos: MouseLocation
 }
 impl State {
     pub fn init() -> State {
@@ -33,7 +52,8 @@ impl State {
             exit: false,
             con_status: ContextStatus::MainMenu,
             refresh_con: true,
-            logs: LogBuffer::new()
+            logs: LogBuffer::new(),
+            mouse_pos: MouseLocation::new()
         }
     }
     fn handle_menu_actions(&mut self) {
@@ -79,6 +99,9 @@ impl GameState for State {
         if self.turn_state == TurnState::Player { player_input(self, con) }
         else if self.turn_state == TurnState::GameOver { game_over_input(self, con) }
 
+        self.mouse_pos.get_pos(con);
+        if self.mouse_pos.has_changed() { self.refresh_con = true }
+
         match self.con_status {
             //If the game is in it's normal running state
             ContextStatus::InGame | ContextStatus::InventoryOpen => {
@@ -88,7 +111,7 @@ impl GameState for State {
                 //Redraw to the console if it needs to be refreshed
                 if self.refresh_con {
                     con.cls();
-                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, &self.logs, self.world.depth);
+                    batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, &self.logs, self.world.depth, self.mouse_pos.current);
                     if self.con_status == ContextStatus::InventoryOpen { batch_inventory_menu(self.inv.as_ref().unwrap()); }
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;

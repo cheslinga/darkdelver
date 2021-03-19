@@ -64,8 +64,8 @@ impl Default for InventoryMenu {
 pub fn batch_inventory_menu(menu: &InventoryMenu) {
     let mut uibatch = DrawBatch::new();
     let mut textbatch = DrawBatch::new();
-    uibatch.target(0);
-    textbatch.target(1);
+    uibatch.target(OBJ_LAYER);
+    textbatch.target(TXT_LAYER);
 
     let menubox = Rect::with_size(2, 2, CONSOLE_W - UI_CUTOFF.x - 4, min(menu.items.len() as i32 + 1, 18));
     uibatch.draw_double_box(menubox, ColorPair::new(GREY75, BLACK));

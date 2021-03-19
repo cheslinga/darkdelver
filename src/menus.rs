@@ -60,8 +60,8 @@ impl Menu {
 pub fn batch_main_menu(menu: &Menu) {
     let mut bgbatch = DrawBatch::new();
     let mut textbatch = DrawBatch::new();
-    bgbatch.target(0);
-    textbatch.target(1);
+    bgbatch.target(OBJ_LAYER);
+    textbatch.target(TXT_LAYER);
 
     textbatch.print_color_centered(CONSOLE_H / 4, "Darkdelver", ColorPair::new(RED, BLACK));
 
@@ -108,7 +108,7 @@ pub fn batch_main_menu(menu: &Menu) {
 }
 pub fn batch_pause_menu(menu: &Menu) {
     let mut textbatch = DrawBatch::new();
-    textbatch.target(1);
+    textbatch.target(TXT_LAYER);
 
     let unselected: ColorPair = ColorPair::new(WHITE, BLACK);
     let selected: ColorPair = ColorPair::new(YELLOW, GREY10);

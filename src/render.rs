@@ -1,16 +1,17 @@
 use crate::prelude::*;
 
 //Runs all draw batching functions;
-pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>, logs: &LogBuffer, floor: i32) {
+pub fn batch_all(map: &Map, camera: &Camera, objects: &Vec<Object>, logs: &LogBuffer, floor: i32, mouse_pos: Point) {
     batch_map_draws(map, camera);
     batch_entity_draws(objects, map, camera, floor);
+    batch_mouse_area(mouse_pos);
     batch_ui_draws(&objects[0], logs);
 }
 
 //Adds all map tiles to the rendering batch.
 fn batch_map_draws(map: &Map, camera: &Camera) {
     let mut batch = DrawBatch::new();
-    batch.target(0);
+    batch.target(OBJ_LAYER);
 
     for y in camera.min_y ..= camera.max_y {
         for x in camera.min_x ..= camera.max_x {
@@ -39,7 +40,7 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
 //Adds all visible entity renderables to the rendering batch.
 fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: i32) {
     let mut batch = DrawBatch::new();
-    batch.target(0);
+    batch.target(OBJ_LAYER);
     let offset = Point::new(camera.min_x, camera.min_y);
 
     //Grab all objects that are drawable and have a position (force the player in at the end)
@@ -79,11 +80,18 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
     batch.submit(5000).expect("Failed to batch entity draw");
 }
 
+fn batch_mouse_area(pos: Point) {
+    let mut batch = DrawBatch::new();
+    batch.target(OBJ_LAYER);
+    batch.set_bg(pos, ORANGE);
+    batch.submit(5050).expect("Failed to batch mouse draw");
+}
+
 fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
     let mut uibatch = DrawBatch::new();
     let mut textbatch = DrawBatch::new();
-    uibatch.target(0);
-    textbatch.target(1);
+    uibatch.target(OBJ_LAYER);
+    textbatch.target(TXT_LAYER);
 
     //Draw the stats box
     uibatch.draw_double_box(Rect::with_size(CONSOLE_W - UI_CUTOFF.x, 0, UI_CUTOFF.x - 1, CONSOLE_H - 1), ColorPair::new(GREY75, BLACK));

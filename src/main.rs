@@ -38,6 +38,10 @@ pub mod prelude {
     pub const CONSOLE_W: i32 = 80;
     pub const CONSOLE_H: i32 = 60;
 
+    //Console layer definitions to reduce the need to refactor as much
+    pub const OBJ_LAYER: usize = 0;
+    pub const TXT_LAYER: usize = 1;
+
     //Constant point values used as directional indicators
     pub const DL_LEFT: Point = Point { x: -1, y: 0 };
     pub const DL_RIGHT: Point = Point { x: 1, y: 0 };
