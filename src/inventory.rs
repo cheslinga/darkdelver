@@ -1,14 +1,27 @@
 use crate::prelude::*;
 use std::cmp::min;
 
+pub enum ItemUsage {
+    Drop,
+    Throw,
+    Equip,
+    Drink
+}
+impl ItemUsage {
+    pub fn get_name(&self) {}
+}
+
 pub struct InventoryMenu {
     pub submenu: Option<InventorySubMenu>,
     pub items: Vec<ItemInfo>,
     pub selection: usize
 }
 pub struct InventorySubMenu {
-    pub text: String,
+    pub info: ItemInfo,
+    pub opts: Vec<ItemUsage>,
+    pub selection: usize
 }
+#[derive(Clone)]
 pub struct ItemInfo {
     pub obj_id: usize,
     pub name: String,
@@ -41,6 +54,8 @@ impl InventoryMenu {
 
         //TEST STUFF:
         console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
+
+        self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone(), vec![ItemUsage::Drop]));
     }
     pub fn move_selection_up(&mut self) {
         if self.selection as i16 - 1 < 0 { return }
@@ -61,7 +76,26 @@ impl Default for InventoryMenu {
     }
 }
 
-pub fn batch_inventory_menu(menu: &InventoryMenu) {
+impl InventorySubMenu {
+    pub fn new(info: ItemInfo, opts: Vec<ItemUsage>) -> InventorySubMenu {
+        InventorySubMenu {
+            info,
+            opts,
+            selection: 0
+        }
+    }
+
+    pub fn move_selection_up(&mut self) {
+        if self.selection as i16 - 1 < 0 { return }
+        else { self.selection -= 1 }
+    }
+    pub fn move_selection_down(&mut self) {
+        if self.selection + 1 >= self.opts.len() { return }
+        else { self.selection += 1 }
+    }
+}
+
+pub fn batch_inventory_menu(menu: &mut InventoryMenu) {
     let mut uibatch = DrawBatch::new();
     let mut textbatch = DrawBatch::new();
     uibatch.target(OBJ_LAYER);
@@ -91,6 +125,12 @@ pub fn batch_inventory_menu(menu: &InventoryMenu) {
             y += 1;
             ofs += 1;
         }
+    }
+
+    if let Some(sub) = &mut menu.submenu {
+        let smbox = Rect::with_size(CONSOLE_W - UI_CUTOFF.x - 25, 2, 24, 12);
+        uibatch.draw_double_box(smbox, ColorPair::new(GREY75, BLACK));
+        textbatch.print(Point::new((smbox.x1 + 1) * 2, smbox.y1 + 1), &sub.info.name);
     }
 
     uibatch.submit(1100).expect("Failed to batch inventory menu draw");

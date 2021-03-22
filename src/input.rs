@@ -11,7 +11,7 @@ pub enum Actions {
 pub fn player_input(gs: &mut State, con: &BTerm) {
     match gs.con_status {
         ContextStatus::InGame => ingame_input(gs, con),
-        ContextStatus::InventoryOpen => inventory_input(gs, con),
+        ContextStatus::InventoryOpen => inventory_input(gs, con, gs.inv.as_ref().unwrap().submenu.is_some()),
         ContextStatus::MainMenu |
         ContextStatus::PauseMenu => menu_input(gs, con),
     }
@@ -75,73 +75,107 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
     }
 }
 
-fn inventory_input(gs: &mut State, con: &BTerm) {
-    if let Some(key) = con.key {
-        match key {
-            VirtualKeyCode::Escape => { inv_clear(gs) },
-            VirtualKeyCode::Return => { inv_trigger_select(gs) },
-            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 => { inv_move_select(gs, UpDown::Up) },
-            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 => { inv_move_select(gs, UpDown::Down) },
-            VirtualKeyCode::A => { inv_trigger_set_select(0, gs) },
-            VirtualKeyCode::B => { inv_trigger_set_select(1, gs) },
-            VirtualKeyCode::C => { inv_trigger_set_select(2, gs) },
-            VirtualKeyCode::D => { inv_trigger_set_select(3, gs) },
-            VirtualKeyCode::E => { inv_trigger_set_select(4, gs) },
-            VirtualKeyCode::F => { inv_trigger_set_select(5, gs) },
-            VirtualKeyCode::G => { inv_trigger_set_select(6, gs) },
-            VirtualKeyCode::H => { inv_trigger_set_select(7, gs) },
-            VirtualKeyCode::I => { inv_trigger_set_select(8, gs) },
-            VirtualKeyCode::J => { inv_trigger_set_select(9, gs) },
-            VirtualKeyCode::K => { inv_trigger_set_select(10, gs) },
-            VirtualKeyCode::L => { inv_trigger_set_select(11, gs) },
-            VirtualKeyCode::M => { inv_trigger_set_select(12, gs) },
-            VirtualKeyCode::N => { inv_trigger_set_select(13, gs) },
-            VirtualKeyCode::O => { inv_trigger_set_select(14, gs) },
-            VirtualKeyCode::P => { inv_trigger_set_select(15, gs) },
-            VirtualKeyCode::Q => { inv_trigger_set_select(16, gs) },
-            VirtualKeyCode::R => { inv_trigger_set_select(17, gs) },
-            VirtualKeyCode::S => { inv_trigger_set_select(18, gs) },
-            VirtualKeyCode::T => { inv_trigger_set_select(19, gs) },
-            VirtualKeyCode::U => { inv_trigger_set_select(20, gs) },
-            VirtualKeyCode::V => { inv_trigger_set_select(21, gs) },
-            VirtualKeyCode::W => { inv_trigger_set_select(22, gs) },
-            VirtualKeyCode::X => { inv_trigger_set_select(23, gs) },
-            VirtualKeyCode::Y => { inv_trigger_set_select(24, gs) },
-            VirtualKeyCode::Z => { inv_trigger_set_select(25, gs) },
-            _ => {}
+fn inventory_input(gs: &mut State, con: &BTerm, submenu: bool) {
+    if !submenu {
+        if let Some(key) = con.key {
+            match key {
+                VirtualKeyCode::Escape => { inv_clear(gs) },
+                VirtualKeyCode::Return => { inv_trigger_select(gs) },
+                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 => { inv_move_select(gs, UpDown::Up) },
+                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 => { inv_move_select(gs, UpDown::Down) },
+                VirtualKeyCode::A => { inv_trigger_set_select(0, gs) },
+                VirtualKeyCode::B => { inv_trigger_set_select(1, gs) },
+                VirtualKeyCode::C => { inv_trigger_set_select(2, gs) },
+                VirtualKeyCode::D => { inv_trigger_set_select(3, gs) },
+                VirtualKeyCode::E => { inv_trigger_set_select(4, gs) },
+                VirtualKeyCode::F => { inv_trigger_set_select(5, gs) },
+                VirtualKeyCode::G => { inv_trigger_set_select(6, gs) },
+                VirtualKeyCode::H => { inv_trigger_set_select(7, gs) },
+                VirtualKeyCode::I => { inv_trigger_set_select(8, gs) },
+                VirtualKeyCode::J => { inv_trigger_set_select(9, gs) },
+                VirtualKeyCode::K => { inv_trigger_set_select(10, gs) },
+                VirtualKeyCode::L => { inv_trigger_set_select(11, gs) },
+                VirtualKeyCode::M => { inv_trigger_set_select(12, gs) },
+                VirtualKeyCode::N => { inv_trigger_set_select(13, gs) },
+                VirtualKeyCode::O => { inv_trigger_set_select(14, gs) },
+                VirtualKeyCode::P => { inv_trigger_set_select(15, gs) },
+                VirtualKeyCode::Q => { inv_trigger_set_select(16, gs) },
+                VirtualKeyCode::R => { inv_trigger_set_select(17, gs) },
+                VirtualKeyCode::S => { inv_trigger_set_select(18, gs) },
+                VirtualKeyCode::T => { inv_trigger_set_select(19, gs) },
+                VirtualKeyCode::U => { inv_trigger_set_select(20, gs) },
+                VirtualKeyCode::V => { inv_trigger_set_select(21, gs) },
+                VirtualKeyCode::W => { inv_trigger_set_select(22, gs) },
+                VirtualKeyCode::X => { inv_trigger_set_select(23, gs) },
+                VirtualKeyCode::Y => { inv_trigger_set_select(24, gs) },
+                VirtualKeyCode::Z => { inv_trigger_set_select(25, gs) },
+                _ => {}
+            }
+        }
+    }
+    else {
+        if let Some(key) = con.key {
+            match key {
+                VirtualKeyCode::Escape => { sm_clear(gs) },
+                VirtualKeyCode::Up | VirtualKeyCode::Numpad8 => { sm_move_select(gs, UpDown::Up) },
+                VirtualKeyCode::Down | VirtualKeyCode::Numpad2 => { sm_move_select(gs, UpDown::Down) },
+                _ => {}
+            }
         }
     }
     gs.refresh_con = true;
 }
 fn inv_trigger_select(gs: &mut State) {
-    let inv = &mut gs.inv.as_mut().unwrap();
+    let inv = gs.inv.as_mut().unwrap();
     let objs = &mut gs.world.objects;
     inv.process_selection(objs);
-    inv_clear(gs);
 }
 fn inv_trigger_set_select(selection: usize, gs: &mut State) {
-    let inv = &mut gs.inv.as_mut().unwrap();
+    let inv = gs.inv.as_mut().unwrap();
     let objs = &mut gs.world.objects;
 
     if selection >= inv.items.len() { return }
     else { inv.selection = selection; }
 
     inv.process_selection(objs);
-    inv_clear(gs);
 }
 fn inv_move_select(gs: &mut State, updown: UpDown) {
-    let inv = &mut gs.inv.as_mut().unwrap();
+    let inv = gs.inv.as_mut().unwrap();
     match updown {
         UpDown::Up => inv.move_selection_up(),
         UpDown::Down => inv.move_selection_down(),
     }
     gs.refresh_con = true;
 }
+fn sm_move_select(gs: &mut State, updown: UpDown) {
+    let sm = gs.inv.as_mut().unwrap().submenu.as_mut().unwrap();
+    match updown {
+        UpDown::Up => sm.move_selection_up(),
+        UpDown::Down => sm.move_selection_down()
+    }
+}
+fn sm_trigger_select(gs: &mut State) {
+    let inv = gs.inv.as_mut().unwrap();
+    let objs = &mut gs.world.objects;
+
+    match inv.submenu.as_ref().unwrap().opts[inv.submenu.as_ref().unwrap().selection.clone()] {
+        ItemUsage::Drop => { console::log(format!("You have dropped {}!", objs[inv.submenu.as_ref().unwrap().info.obj_id.clone()].name.as_ref().unwrap_or(&String::from("NIL")))) }
+        ItemUsage::Throw => { console::log( format!("You have thrown {}!", objs[inv.submenu.as_ref().unwrap().info.obj_id.clone()].name.as_ref().unwrap_or(&String::from("NIL")))) }
+        _ => return
+    }
+
+    inv_clear(gs);
+}
 enum UpDown {Up,Down}
 
 fn inv_clear(gs: &mut State) {
     gs.inv = None;
     gs.con_status = ContextStatus::InGame;
+    gs.refresh_con = true;
+}
+fn sm_clear(gs: &mut State) {
+    let inv = gs.inv.as_mut().unwrap();
+    inv.submenu = None;
     gs.refresh_con = true;
 }
 

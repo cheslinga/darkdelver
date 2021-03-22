@@ -112,7 +112,7 @@ impl GameState for State {
                 if self.refresh_con {
                     con.cls();
                     batch_all(&self.world.active_map, &self.world.camera, &self.world.objects, &self.logs, self.world.depth, self.mouse_pos.current);
-                    if self.con_status == ContextStatus::InventoryOpen { batch_inventory_menu(self.inv.as_ref().unwrap()); }
+                    if self.con_status == ContextStatus::InventoryOpen { batch_inventory_menu(self.inv.as_mut().unwrap()); }
                     render_draw_buffer(con).expect("Error rendering draw buffer to the console!");
                     self.refresh_con = false;
                 }
