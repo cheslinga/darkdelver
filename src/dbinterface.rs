@@ -38,7 +38,6 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
 
             let obj = Object {
                 name: Some(exp.name),
-                db_imported: Some(exp.id),
                 render: Some(Render {
                     glyph: exp.render_glyph as u16,
                     color: ColorPair::new(fg, bg),
