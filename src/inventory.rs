@@ -8,7 +8,22 @@ pub enum ItemUsage {
     Drink
 }
 impl ItemUsage {
-    pub fn get_name(&self) {}
+    pub fn get_name(&self) -> String {
+        return match self {
+            ItemUsage::Drop => "Drop",
+            ItemUsage::Throw => "Throw",
+            ItemUsage::Equip => "Equip",
+            ItemUsage::Drink => "Drink"
+        }.to_string()
+    }
+    pub fn get_letter(&self) -> char {
+        return match self {
+            ItemUsage::Drop => 'd',
+            ItemUsage::Throw => 't',
+            ItemUsage::Equip => 'e',
+            ItemUsage::Drink => 'q'
+        }
+    }
 }
 
 pub struct InventoryMenu {
@@ -49,13 +64,11 @@ impl InventoryMenu {
         }
     }
     pub fn process_selection(&mut self, objects: &mut Vec<Object>) {
-        let item_ptr = &mut self.items[self.selection];
-        let obj_ptr = &mut objects[item_ptr.obj_id];
-
         //TEST STUFF:
-        console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
-
-        self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone(), vec![ItemUsage::Drop]));
+        //let item_ptr = &mut self.items[self.selection];
+        //let obj_ptr = &mut objects[item_ptr.obj_id];
+        //console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
+        self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone(), vec![ItemUsage::Drop,ItemUsage::Throw]));
     }
     pub fn move_selection_up(&mut self) {
         if self.selection as i16 - 1 < 0 { return }
@@ -131,6 +144,17 @@ pub fn batch_inventory_menu(menu: &mut InventoryMenu) {
         let smbox = Rect::with_size(CONSOLE_W - UI_CUTOFF.x - 25, 2, 24, 12);
         uibatch.draw_double_box(smbox, ColorPair::new(GREY75, BLACK));
         textbatch.print(Point::new((smbox.x1 + 1) * 2, smbox.y1 + 1), &sub.info.name);
+
+        let mut ypos = smbox.y1 + 3;
+        for (i, act) in sub.opts.iter().enumerate() {
+            let select_color = match i == sub.selection {
+                false => {ColorPair::new(WHITE,BLACK)},
+                true => {ColorPair::new(BLACK,YELLOW)}
+            };
+
+            textbatch.print_color(Point::new((smbox.x1 + 1) * 2, ypos), act.get_name(), select_color);
+            ypos += 1;
+        }
     }
 
     uibatch.submit(1100).expect("Failed to batch inventory menu draw");
