@@ -1,11 +1,28 @@
 use crate::prelude::*;
 use std::cmp::min;
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize,Deserialize)]
+pub struct ItemStats {
+    pub usages: Vec<ItemUsage>,
+    pub effects: Vec<ItemEffect>
+}
+impl ItemStats {
+    pub fn new(usages: Vec<ItemUsage>, effects: Vec<ItemEffect>) -> ItemStats { ItemStats { usages, effects } }
+    pub fn blank() -> ItemStats { ItemStats { usages: vec![], effects: vec![] } }
+    pub fn blank_with_drop() -> ItemStats { ItemStats { usages: vec![ItemUsage::Drop], effects: vec![ItemEffect::nil()] } }
+}
+impl Clone for ItemStats {
+    fn clone(&self) -> Self { ItemStats { usages: self.usages.to_vec(), effects: self.effects.to_vec() } }
+}
+
+#[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
 pub enum ItemUsage {
     Drop,
     Throw,
     Equip,
-    Drink
+    Drink,
+    Activate
 }
 impl ItemUsage {
     pub fn get_name(&self) -> String {
@@ -13,7 +30,8 @@ impl ItemUsage {
             ItemUsage::Drop => "Drop",
             ItemUsage::Throw => "Throw",
             ItemUsage::Equip => "Equip",
-            ItemUsage::Drink => "Drink"
+            ItemUsage::Drink => "Drink",
+            ItemUsage::Activate => "Activate",
         }.to_string()
     }
     pub fn get_letter(&self) -> char {
@@ -21,10 +39,28 @@ impl ItemUsage {
             ItemUsage::Drop => 'd',
             ItemUsage::Throw => 't',
             ItemUsage::Equip => 'e',
-            ItemUsage::Drink => 'q'
+            ItemUsage::Drink => 'q',
+            ItemUsage::Activate => 'a',
         }
     }
 }
+
+#[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
+pub enum EffectType {
+    NIL, HealTgt, DamageTgt
+}
+#[derive(Clone,Serialize,Deserialize)]
+pub struct ItemEffect {
+    pub etype: EffectType,
+    pub params: Option<Vec<i32>>
+}
+impl ItemEffect {
+    pub fn nil() -> ItemEffect { ItemEffect::default() }
+}
+impl Default for ItemEffect {
+    fn default() -> Self { ItemEffect { etype: EffectType::NIL, params: None } }
+}
+
 
 pub struct InventoryMenu {
     pub submenu: Option<InventorySubMenu>,
@@ -40,7 +76,8 @@ pub struct InventorySubMenu {
 pub struct ItemInfo {
     pub obj_id: usize,
     pub name: String,
-    pub render: Render
+    pub render: Render,
+    pub stats: ItemStats
 }
 
 impl InventoryMenu {
@@ -56,7 +93,8 @@ impl InventoryMenu {
                     let info = ItemInfo {
                         obj_id: i,
                         name: obj.name.as_ref().unwrap().to_owned(),
-                        render: *&obj.render.unwrap()
+                        render: *&obj.render.unwrap(),
+                        stats: obj.item_stats.as_ref().unwrap().clone()
                     };
                     self.items.push(info);
                 }
@@ -68,7 +106,7 @@ impl InventoryMenu {
         //let item_ptr = &mut self.items[self.selection];
         //let obj_ptr = &mut objects[item_ptr.obj_id];
         //console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
-        self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone(), vec![ItemUsage::Drop,ItemUsage::Throw]));
+        self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone()));
     }
     pub fn move_selection_up(&mut self) {
         if self.selection as i16 - 1 < 0 { return }
@@ -90,7 +128,8 @@ impl Default for InventoryMenu {
 }
 
 impl InventorySubMenu {
-    pub fn new(info: ItemInfo, opts: Vec<ItemUsage>) -> InventorySubMenu {
+    pub fn new(info: ItemInfo) -> InventorySubMenu {
+        let opts = info.stats.usages.to_vec();
         InventorySubMenu {
             info,
             opts,

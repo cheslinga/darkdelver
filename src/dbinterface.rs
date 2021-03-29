@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use rusqlite::*;
+use rusqlite::types::ValueRef;
 
 const DB_FILEPATH: &str = "res/dd_raw.sqlite";
 
@@ -8,7 +9,8 @@ struct ExportedObject {
     name: String,
     render_glyph: u8,
     render_fg: (u8,u8,u8),
-    render_bg: (u8,u8,u8)
+    render_bg: (u8,u8,u8),
+    item_stats: Option<ItemStats>
 }
 
 pub fn open_connection() -> Connection {
@@ -29,7 +31,17 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
             name: row.get(1)?,
             render_glyph: row.get(7)?,
             render_fg: (row.get(8)?, row.get(9)?, row.get(10)?),
-            render_bg: (row.get(11)?, row.get(12)?, row.get(13)?)
+            render_bg: (row.get(11)?, row.get(12)?, row.get(13)?),
+            item_stats: {
+                let mut stats = ItemStats::blank_with_drop();
+
+                if row.get_raw_checked(15)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Activate, ItemEffect::nil()) }
+                if row.get_raw_checked(16)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Drink, ItemEffect::nil()) }
+                if row.get_raw_checked(17)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Equip, ItemEffect::nil()) }
+
+                if stats.usages.is_empty() { None }
+                else { Some(stats) }
+            }
         })
     }).ok()? {
         if let Ok(exp) = item {
@@ -43,10 +55,16 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
                     color: ColorPair::new(fg, bg),
                     order: 3
                 }),
+                item_stats: exp.item_stats,
                 ..Default::default()
             };
             objs.push(obj);
         }
     }
     return Some(objs)
+}
+
+fn import_item_functions(stats: &mut ItemStats, usage_val: ItemUsage, effect_val: ItemEffect) {
+    stats.usages.push(usage_val);
+    stats.effects.push(effect_val);
 }

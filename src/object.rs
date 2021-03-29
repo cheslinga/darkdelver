@@ -18,7 +18,8 @@ pub struct Object {
     pub health: Option<Health>,
     pub damage: Option<Damage>,
 
-    pub ai: Option<AIClass>
+    pub ai: Option<AIClass>,
+    pub item_stats: Option<ItemStats>
 }
 impl Object {
     pub fn blank() -> Object {
