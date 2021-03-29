@@ -68,10 +68,10 @@ impl HeatMap {
         self.lifetime -= 1;
     }
     //Clear the entire graph, reset the lifetime, and add the player's position to the growable node graph
-    pub fn reset_to_single_node(&mut self, pos: &Point) {
+    pub fn reset_to_single_node(&mut self, pos: &Point, lifetime: u16) {
         self.nodes.clear();
         self.old_nodes.clear();
-        self.lifetime = 5;
+        self.lifetime = lifetime;
         self.nodes.push(*pos);
     }
     //Clears out all nodes containing points in a vector
@@ -88,24 +88,22 @@ impl HeatMap {
     }
     //Finds the shortest path to the nearest hot node in the heatmap
     pub fn get_closest_heat(&self, map: &Map, start: Point) -> Point {
-        let targets = nodes_to_map_targets(&self.nodes, &self.old_nodes, map);
+        let targets = {
+            let mut targets: Vec<usize> = Vec::new();
+            for n in self.nodes.iter() {
+                targets.push(map.index(n.x, n.y));
+            }
+            for o in self.old_nodes.iter() {
+                targets.push(map.index(o.x, o.y));
+            }
+            targets.sort();
+            targets
+        };
         let dijkstra_map = DijkstraMap::new(80, 80, &targets, map, 64.0);
-        if let Some(destidx) = DijkstraMap::find_lowest_exit(&dijkstra_map, map.index(start.x, start.y), map) {
-            return map.point_from_idx(destidx)
+        return if let Some(destidx) = DijkstraMap::find_lowest_exit(&dijkstra_map, map.index(start.x, start.y), map) {
+            map.point_from_idx(destidx)
+        } else {
+            start
         }
-        else {
-            return start
-        }
     }
-}
-fn nodes_to_map_targets(nodes: &Vec<Point>, old_nodes: &Vec<Point>, map: &Map) -> Vec<usize> {
-    let mut targets: Vec<usize> = Vec::new();
-    for n in nodes.iter() {
-        targets.push(map.index(n.x, n.y));
-    }
-    for o in old_nodes.iter() {
-        targets.push(map.index(o.x, o.y));
-    }
-    targets.sort();
-    return targets
 }

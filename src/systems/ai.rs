@@ -32,7 +32,7 @@ fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map, rng: &m
                 ai.target = Some(0);
                 ai.state = AIState::Chasing;
                 ai.tgt_memory = 24;
-                ai.tgt_heatmap.reset_to_single_node(&player_pos);
+                ai.tgt_heatmap.reset_to_single_node(&player_pos, 5);
 
                 let mut dest: Point = pos;
                 let distance = DistanceAlg::Pythagoras.distance2d(pos, player_pos);

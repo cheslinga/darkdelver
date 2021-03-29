@@ -57,7 +57,7 @@ pub fn process_fov(objects: &mut Vec<Object>, map: &mut Map) {
 
             if let Some(pos) = tgt_pos {
                 if visible.contains(&pos) {
-                    ai.tgt_heatmap.reset_to_single_node(&pos);
+                    ai.tgt_heatmap.reset_to_single_node(&pos, 5);
                 } else {
                     ai.tgt_heatmap.clear_heat_area(&visible);
                 }
