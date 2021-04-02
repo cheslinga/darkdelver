@@ -70,6 +70,20 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
                 gs.refresh_con = true;
             },
 
+            //CHEATYFACE MODE
+            /*
+            VirtualKeyCode::Grave => {
+                for obj in gs.world.objects.iter() {
+                    println!("{} is at {},{}, with icon {}",
+                             obj.name.as_ref().unwrap_or(&"NIL".to_string()),
+                             obj.pos.as_ref().unwrap_or(&Point::zero()).x,
+                             obj.pos.as_ref().unwrap_or(&Point::zero()).y,
+                             to_char(obj.render.unwrap_or(Render { glyph: 1, color: ColorPair::new(BLACK, BLACK), order: 0 }).glyph as u8).to_string()
+                    );
+                }
+            },
+            */
+
             _ => {}
         }
     }
@@ -119,6 +133,7 @@ fn inventory_input(gs: &mut State, con: &BTerm, submenu: bool) {
                 VirtualKeyCode::Escape => { sm_clear(gs) },
                 VirtualKeyCode::Up | VirtualKeyCode::Numpad8 => { sm_move_select(gs, UpDown::Up) },
                 VirtualKeyCode::Down | VirtualKeyCode::Numpad2 => { sm_move_select(gs, UpDown::Down) },
+                VirtualKeyCode::Return => { sm_trigger_select(gs) }
                 _ => {}
             }
         }
@@ -155,16 +170,14 @@ fn sm_move_select(gs: &mut State, updown: UpDown) {
     }
 }
 fn sm_trigger_select(gs: &mut State) {
-    let inv = gs.inv.as_mut().unwrap();
+    let sm = gs.inv.as_mut().unwrap().submenu.as_mut().unwrap();
     let objs = &mut gs.world.objects;
+    let logs = &mut gs.logs;
 
-    match inv.submenu.as_ref().unwrap().opts[inv.submenu.as_ref().unwrap().selection.clone()] {
-        ItemUsage::Drop => { console::log(format!("You have dropped {}!", objs[inv.submenu.as_ref().unwrap().info.obj_id.clone()].name.as_ref().unwrap_or(&String::from("NIL")))) }
-        ItemUsage::Throw => { console::log( format!("You have thrown {}!", objs[inv.submenu.as_ref().unwrap().info.obj_id.clone()].name.as_ref().unwrap_or(&String::from("NIL")))) }
-        _ => return
-    }
+    sm.process_selection(objs, logs);
 
     inv_clear(gs);
+    gs.proc = true;
 }
 enum UpDown {Up,Down}
 

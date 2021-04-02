@@ -145,8 +145,43 @@ impl InventorySubMenu {
         if self.selection + 1 >= self.opts.len() { return }
         else { self.selection += 1 }
     }
+    pub fn process_selection(&mut self, objects: &mut Vec<Object>, logs: &mut LogBuffer) {
+        match self.opts[self.selection] {
+            ItemUsage::Drop => {
+                drop_item(objects, self.info.obj_id);
+                logs.update_logs(LogMessage::new()
+                    .add_part("You have dropped", ColorPair::new(WHITE,GREY10))
+                    .add_part(&self.info.name, ColorPair::new(self.info.render.color.fg,GREY10))
+                );
+            },
+            ItemUsage::Throw => {}
+            ItemUsage::Equip => {}
+            ItemUsage::Drink => {}
+            ItemUsage::Activate => {}
+        }
+    }
 }
 
+//Item interaction functions
+pub fn drop_item(objects: &mut Vec<Object>, item_id: usize) {
+    let owner = objects[item_id].in_inventory.as_ref().unwrap().owner_id.clone();
+    let drop_pos = objects[owner].pos.clone();
+    let floor = objects[owner].floor.clone();
+
+    if drop_pos.is_some() {
+        let item = &mut objects[item_id];
+        item.in_inventory = None;
+        item.pos = drop_pos;
+        item.floor = floor;
+    }
+    else {
+        console::log("Could not drop this item as no position to drop exists!");
+    }
+}
+
+
+
+//Inventory menu rendering
 pub fn batch_inventory_menu(menu: &mut InventoryMenu) {
     let mut uibatch = DrawBatch::new();
     let mut textbatch = DrawBatch::new();
