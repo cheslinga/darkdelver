@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub enum Actions {
     MoveUp,MoveDown,MoveLeft,MoveRight,
     MoveUpLeft,MoveUpRight,MoveDownLeft,MoveDownRight,
+    TryPickUp,
     TryGoDown,
     Wait,
 }
@@ -60,6 +61,9 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
                 gs.con_status = ContextStatus::PauseMenu;
                 gs.refresh_con = true;
             },
+
+            VirtualKeyCode::G
+                => process_action(gs, Actions::TryPickUp),
 
             VirtualKeyCode::Slash
                 => process_action(gs, Actions::TryGoDown),
@@ -222,6 +226,8 @@ fn process_action(gs: &mut State, action: Actions) {
         Actions::MoveUpRight => try_move_player(gs, DL_UP + DL_RIGHT),
         Actions::MoveDownLeft => try_move_player(gs, DL_DOWN + DL_LEFT),
         Actions::MoveDownRight => try_move_player(gs, DL_DOWN + DL_RIGHT),
+
+        Actions::TryPickUp => { try_pick_up(&mut gs.world.objects, 0, &mut gs.logs, true); true },
 
         Actions::TryGoDown => try_go_downstairs(gs)
     };

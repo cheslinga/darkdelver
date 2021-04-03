@@ -106,7 +106,8 @@ impl InventoryMenu {
         //let item_ptr = &mut self.items[self.selection];
         //let obj_ptr = &mut objects[item_ptr.obj_id];
         //console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
-        self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone()));
+        return if self.items.len() <= 0 {}
+        else { self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone())); }
     }
     pub fn move_selection_up(&mut self) {
         if self.selection as i16 - 1 < 0 { return }
@@ -151,7 +152,7 @@ impl InventorySubMenu {
                 drop_item(objects, self.info.obj_id);
                 logs.update_logs(LogMessage::new()
                     .add_part("You have dropped", ColorPair::new(WHITE,GREY10))
-                    .add_part(&self.info.name, ColorPair::new(self.info.render.color.fg,GREY10))
+                    .add_part(format!("{}.", &self.info.name), ColorPair::new(self.info.render.color.fg,GREY10))
                 );
             },
             ItemUsage::Throw => {}
@@ -163,6 +164,53 @@ impl InventorySubMenu {
 }
 
 //Item interaction functions
+pub fn try_pick_up(objects: &mut Vec<Object>, source_obj: usize, logs: &mut LogBuffer, log_msg: bool) {
+    let try_pos = objects[source_obj].pos.as_ref().unwrap_or(&Point::zero()).clone();
+    let pickup_list = {
+        let mut vec = Vec::new();
+        for (i, o) in objects.iter().enumerate() {
+            if let Some(pos) = o.pos { if pos == try_pos && o.item_stats.is_some() { vec.push(i) } }
+        }
+        vec
+    };
+
+    if pickup_list.len() == 1 {
+        add_item_to_inventory(objects, source_obj, pickup_list[0], logs, log_msg);
+    }
+}
+
+pub fn add_item_to_inventory(objects: &mut Vec<Object>, source_obj: usize, item: usize, logs: &mut LogBuffer, log_msg: bool) {
+    let item = &mut objects[item];
+    item.in_inventory = Some(InInventory { owner_id: source_obj });
+    item.pos = None;
+
+    if log_msg {
+        let item_name = item.name.as_ref().unwrap().clone();
+        let item_colour = ColorPair::new(item.render.as_ref().unwrap().color.fg, GREY10);
+        let (name, verb) = {
+            if source_obj == 0 {
+                (String::from("You"), String::from("pick"))
+            }
+            else {
+                (if let Some(name) = objects[source_obj].name.clone() { name } else { String::from("Something") }, String::from("picks"))
+            }
+        };
+
+        let owner_colour = ColorPair::new
+            (objects[source_obj].render
+                .unwrap_or(Render { glyph: 0, color: ColorPair::new(WHITE, BLACK), order: 0 })
+                .color.fg,
+             GREY10);
+
+        logs.update_logs(LogMessage::new()
+            .add_part(name, owner_colour)
+            .add_part(verb, ColorPair::new(WHITE, GREY10))
+            .add_part(String::from("up"), ColorPair::new(WHITE, GREY10))
+            .add_part(format!("{}.", item_name), item_colour)
+        );
+    }
+}
+
 pub fn drop_item(objects: &mut Vec<Object>, item_id: usize) {
     let owner = objects[item_id].in_inventory.as_ref().unwrap().owner_id.clone();
     let drop_pos = objects[owner].pos.clone();
