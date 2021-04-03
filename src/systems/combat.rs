@@ -21,18 +21,35 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_d
                     health.current -= wound;
                     total += wound;
                 } //total
+                let (name, verb) = {
+                    if id == 0 {
+                        (String::from("You"), String::from("take"))
+                    }
+                    else {
+                        (obj.name.as_ref().unwrap().clone(), String::from("takes"))
+                    }
+                };
                 logs.update_logs(LogMessage::new()
-                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, GREY10))
-                    .add_part(format!("takes {} damage.", total), ColorPair::new(WHITE, GREY10))
+                    .add_part(name, ColorPair::new(obj.render.as_ref().unwrap().color.fg, GREY10))
+                    .add_part(format!("{} {} damage.", verb, total), ColorPair::new(WHITE, GREY10))
                 );
                 health.wounds.clear();
             }
             //If it should be dead, make sure it gets killed at the end
             if health.current <= 0 {
                 kill_list.push(id);
+
+                let (name, verb) = {
+                    if id == 0 {
+                        (String::from("You"), String::from("have"))
+                    }
+                    else {
+                        (obj.name.as_ref().unwrap().clone(), String::from("has"))
+                    }
+                };
                 logs.update_logs(LogMessage::new()
-                    .add_part(format!("{}", obj.name.as_ref().unwrap()), ColorPair::new(obj.render.as_ref().unwrap().color.fg, GREY10))
-                    .add_part("has been slain.", ColorPair::new(WHITE, GREY10))
+                    .add_part(name, ColorPair::new(obj.render.as_ref().unwrap().color.fg, GREY10))
+                    .add_part(format!("{} been slain.", verb), ColorPair::new(WHITE, GREY10))
                 );
 
                 if let Object { tag: Some(tag), .. } = obj {
