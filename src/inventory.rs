@@ -27,11 +27,14 @@ pub enum ItemUsage {
     Activate
 }
 impl ItemUsage {
-    pub fn get_name(&self) -> String {
+    pub fn get_name(&self, is_equipped: bool) -> String {
         return match self {
             ItemUsage::Drop => "Drop",
             ItemUsage::Throw => "Throw",
-            ItemUsage::Equip => "Equip",
+            ItemUsage::Equip => {
+                if is_equipped { "Unequip" }
+                else { "Equip" }
+            },
             ItemUsage::Drink => "Drink",
             ItemUsage::Activate => "Activate",
         }.to_string()
@@ -161,7 +164,12 @@ impl InventorySubMenu {
             },
             ItemUsage::Throw => {}
             ItemUsage::Equip => {
-                equip_object(objects, self.info.obj_id, logs);
+                if objects[self.info.obj_id].item_stats.as_ref().unwrap().equipped {
+                    unequip_object(objects, self.info.obj_id, logs);
+                }
+                else {
+                    equip_object(objects, self.info.obj_id, logs);
+                }
             }
             ItemUsage::Drink => {}
             ItemUsage::Activate => {}
@@ -236,7 +244,7 @@ pub fn drop_item(objects: &mut Vec<Object>, item_id: usize) {
 
 
 //Inventory menu rendering
-pub fn batch_inventory_menu(menu: &mut InventoryMenu) {
+pub fn batch_inventory_menu(menu: &mut InventoryMenu, objects: &Vec<Object>) {
     let mut uibatch = DrawBatch::new();
     let mut textbatch = DrawBatch::new();
     uibatch.target(OBJ_LAYER);
@@ -279,8 +287,10 @@ pub fn batch_inventory_menu(menu: &mut InventoryMenu) {
                 false => {ColorPair::new(WHITE,BLACK)},
                 true => {ColorPair::new(BLACK,YELLOW)}
             };
-
-            textbatch.print_color(Point::new((smbox.x1 + 1) * 2, ypos), act.get_name(), select_color);
+            let equipped =
+                if let Some(stats) = &objects[sub.info.obj_id].item_stats { stats.equipped }
+                else { false };
+            textbatch.print_color(Point::new((smbox.x1 + 1) * 2, ypos), act.get_name(equipped), select_color);
             ypos += 1;
         }
     }

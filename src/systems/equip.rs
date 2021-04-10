@@ -35,15 +35,15 @@ pub fn equip_object(objects: &mut Vec<Object>, source: usize, logs: &mut LogBuff
     if !valid_slots.contains(&slot) {
         logs.update_logs(LogMessage::new()
             .add_part("You cannot equip the", ColorPair::new(WHITE,GREY10))
-            .add_part(name, ColorPair::new(color, GREY10))
+            .add_part(format!("{}.",name), ColorPair::new(color, GREY10))
         );
     }
     else {
         objects[source].item_stats.as_mut().unwrap().equipped = true;
         process_effect_modifiers(objects, source, false);
         logs.update_logs(LogMessage::new()
-            .add_part("You've equipped the", ColorPair::new(WHITE,GREY10))
-            .add_part(name, ColorPair::new(color, GREY10))
+            .add_part("You equip the", ColorPair::new(WHITE,GREY10))
+            .add_part(format!("{}.",name), ColorPair::new(color, GREY10))
         );
     }
 
@@ -56,7 +56,7 @@ pub fn unequip_object(objects: &mut Vec<Object>, source: usize, logs: &mut LogBu
     process_effect_modifiers(objects, source, true);
     logs.update_logs(LogMessage::new()
         .add_part("You unequip the", ColorPair::new(WHITE,GREY10))
-        .add_part(name, ColorPair::new(color, GREY10))
+        .add_part(format!("{}.",name), ColorPair::new(color, GREY10))
     );
 }
 
