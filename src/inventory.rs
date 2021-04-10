@@ -5,15 +5,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize,Deserialize)]
 pub struct ItemStats {
     pub usages: Vec<ItemUsage>,
-    pub effects: Vec<ItemEffect>
+    pub effects: Vec<ItemEffect>,
+    pub equipped: bool,
+    pub effects_applied: bool
 }
 impl ItemStats {
-    pub fn new(usages: Vec<ItemUsage>, effects: Vec<ItemEffect>) -> ItemStats { ItemStats { usages, effects } }
-    pub fn blank() -> ItemStats { ItemStats { usages: vec![], effects: vec![] } }
-    pub fn blank_with_drop() -> ItemStats { ItemStats { usages: vec![ItemUsage::Drop], effects: vec![ItemEffect::nil()] } }
+    pub fn new(usages: Vec<ItemUsage>, effects: Vec<ItemEffect>) -> ItemStats { ItemStats { usages, effects, equipped: false, effects_applied: false } }
+    pub fn blank() -> ItemStats { ItemStats { usages: vec![], effects: vec![], equipped: false, effects_applied: false } }
+    pub fn blank_with_drop() -> ItemStats { ItemStats { usages: vec![ItemUsage::Drop], effects: vec![ItemEffect::nil()], equipped: false, effects_applied: false } }
 }
 impl Clone for ItemStats {
-    fn clone(&self) -> Self { ItemStats { usages: self.usages.to_vec(), effects: self.effects.to_vec() } }
+    fn clone(&self) -> Self { ItemStats { usages: self.usages.to_vec(), effects: self.effects.to_vec(), equipped: self.equipped, effects_applied: self.effects_applied } }
 }
 
 #[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
@@ -47,10 +49,12 @@ impl ItemUsage {
 
 #[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
 pub enum EffectType {
-    NIL, HealTgt, DamageTgt
+    NIL, HealSelf, DamageTgt, HealthUp, AttackUp
 }
+
 #[derive(Clone,Serialize,Deserialize)]
 pub struct ItemEffect {
+    pub name: String,
     pub etype: EffectType,
     pub params: Option<Vec<i32>>
 }
@@ -58,7 +62,7 @@ impl ItemEffect {
     pub fn nil() -> ItemEffect { ItemEffect::default() }
 }
 impl Default for ItemEffect {
-    fn default() -> Self { ItemEffect { etype: EffectType::NIL, params: None } }
+    fn default() -> Self { ItemEffect { name: format!(""), etype: EffectType::NIL, params: None } }
 }
 
 
@@ -156,7 +160,9 @@ impl InventorySubMenu {
                 );
             },
             ItemUsage::Throw => {}
-            ItemUsage::Equip => {}
+            ItemUsage::Equip => {
+                equip_object(objects, self.info.obj_id, logs);
+            }
             ItemUsage::Drink => {}
             ItemUsage::Activate => {}
         }
@@ -185,8 +191,8 @@ pub fn add_item_to_inventory(objects: &mut Vec<Object>, source_obj: usize, item:
     item.pos = None;
 
     if log_msg {
-        let item_name = item.name.as_ref().unwrap().clone();
-        let item_colour = ColorPair::new(item.render.as_ref().unwrap().color.fg, GREY10);
+        let item_name = item.name.as_ref().unwrap_or(&format!("NIL")).clone();
+        let item_colour = ColorPair::new(item.render.as_ref().unwrap_or(&Render::nil_render()).color.fg, GREY10);
         let (name, verb) = {
             if source_obj == 0 {
                 (String::from("You"), String::from("pick"))

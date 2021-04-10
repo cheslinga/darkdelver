@@ -10,7 +10,8 @@ struct ExportedObject {
     render_glyph: u8,
     render_fg: (u8,u8,u8),
     render_bg: (u8,u8,u8),
-    item_stats: Option<ItemStats>
+    item_stats: Option<ItemStats>,
+    equip_slot: Option<EquipSlot>
 }
 
 pub fn open_connection() -> Connection {
@@ -29,19 +30,20 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
         Ok(ExportedObject {
             id: row.get(0)?,
             name: row.get(1)?,
-            render_glyph: row.get(7)?,
-            render_fg: (row.get(8)?, row.get(9)?, row.get(10)?),
-            render_bg: (row.get(11)?, row.get(12)?, row.get(13)?),
+            render_glyph: row.get(8)?,
+            render_fg: (row.get(9)?, row.get(10)?, row.get(11)?),
+            render_bg: (row.get(12)?, row.get(13)?, row.get(14)?),
             item_stats: {
                 let mut stats = ItemStats::blank_with_drop();
 
-                if row.get_raw_checked(15)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Activate, ItemEffect::nil()) }
-                if row.get_raw_checked(16)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Drink, ItemEffect::nil()) }
-                if row.get_raw_checked(17)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Equip, ItemEffect::nil()) }
+                if row.get_raw_checked(16)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Activate, ItemEffect::nil()) }
+                if row.get_raw_checked(17)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Drink, ItemEffect::nil()) }
+                if row.get_raw_checked(18)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Equip, ItemEffect::nil()) }
 
                 if stats.usages.is_empty() { None }
                 else { Some(stats) }
-            }
+            },
+            equip_slot: EquipSlot::match_db_string(row.get(6).unwrap_or(format!("NIL")))
         })
     }).ok()? {
         if let Ok(exp) = item {
@@ -56,6 +58,7 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
                     order: 3
                 }),
                 item_stats: exp.item_stats,
+                equip_slot: exp.equip_slot,
                 ..Default::default()
             };
             objs.push(obj);

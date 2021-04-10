@@ -1,5 +1,7 @@
 use crate::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::slice::Iter;
+use std::collections::HashSet;
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct Object {
@@ -14,6 +16,7 @@ pub struct Object {
     pub initiative: Option<u8>,
 
     pub in_inventory: Option<InInventory>,
+    pub equip_slot: Option<EquipSlot>,
 
     pub health: Option<Health>,
     pub damage: Option<Damage>,
@@ -51,6 +54,15 @@ pub struct Render {
     pub glyph: FontCharType,
     pub color: ColorPair,
     pub order: u8
+}
+impl Render {
+    pub fn nil_render() -> Render {
+        Render {
+            glyph: 0,
+            color: ColorPair::new(WHITE,BLACK),
+            order: 0
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -91,7 +103,6 @@ impl Damage {
                 dmg += m;
             }
         }
-
         return dmg
     }
 }
@@ -108,4 +119,30 @@ impl Default for PlayerMemory {
 #[derive(Serialize,Deserialize)]
 pub struct InInventory {
     pub owner_id: usize
+}
+#[derive(Clone,Copy,Serialize,Deserialize,Eq,PartialEq,Hash)]
+pub enum EquipSlot {
+    Head,Body,Arms,Legs,Feet,MainHand,OffHand,TwoHand,AnyHand,Ring1,Ring2
+}
+impl EquipSlot {
+    pub fn get_all_slots() -> HashSet<EquipSlot> {
+        return {
+            let mut all_slots: HashSet<EquipSlot> = HashSet::new();
+            for s in [EquipSlot::Arms, EquipSlot::Body, EquipSlot::Feet, EquipSlot::Head, EquipSlot::Legs, EquipSlot::OffHand, EquipSlot::MainHand,
+                      EquipSlot::TwoHand, EquipSlot::AnyHand, EquipSlot::Ring1, EquipSlot::Ring2].iter()
+            {
+                all_slots.insert(*s);
+            }
+            all_slots
+        }
+    }
+    pub fn match_db_string(db_string: String) -> Option<EquipSlot> {
+        match db_string.as_str() {
+            "MainHand" => Some(EquipSlot::MainHand),
+            "OffHand" => Some(EquipSlot::OffHand),
+            "AnyHand" => Some(EquipSlot::AnyHand),
+            "2Hand" => Some(EquipSlot::TwoHand),
+            _ => None
+        }
+    }
 }
