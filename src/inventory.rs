@@ -156,7 +156,7 @@ impl InventorySubMenu {
     pub fn process_selection(&mut self, objects: &mut Vec<Object>, logs: &mut LogBuffer) {
         match self.opts[self.selection] {
             ItemUsage::Drop => {
-                drop_item(objects, self.info.obj_id);
+                drop_item(objects, self.info.obj_id, logs);
                 logs.update_logs(LogMessage::new()
                     .add_part("You have dropped", ColorPair::new(WHITE,GREY10))
                     .add_part(format!("{}.", &self.info.name), ColorPair::new(self.info.render.color.fg,GREY10))
@@ -225,12 +225,13 @@ pub fn add_item_to_inventory(objects: &mut Vec<Object>, source_obj: usize, item:
     }
 }
 
-pub fn drop_item(objects: &mut Vec<Object>, item_id: usize) {
+pub fn drop_item(objects: &mut Vec<Object>, item_id: usize, logs: &mut LogBuffer) {
     let owner = objects[item_id].in_inventory.as_ref().unwrap().owner_id.clone();
     let drop_pos = objects[owner].pos.clone();
     let floor = objects[owner].floor.clone();
 
     if drop_pos.is_some() {
+        if objects[item_id].item_stats.as_mut().unwrap().equipped { unequip_object(objects, item_id, logs) }
         let item = &mut objects[item_id];
         item.in_inventory = None;
         item.pos = drop_pos;
