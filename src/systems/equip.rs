@@ -22,6 +22,7 @@ pub fn equip_object(objects: &mut Vec<Object>, source: usize, logs: &mut LogBuff
                         }
                         else if this_slot == &EquipSlot::MainHand || this_slot == &EquipSlot::OffHand || this_slot == &EquipSlot::AnyHand {
                             valid_slots.remove(&EquipSlot::TwoHand);
+                            valid_slots.remove(this_slot);
                         }
                         else {
                             valid_slots.remove(this_slot);
