@@ -20,7 +20,7 @@ pub fn spawn_player(startpos: Point) -> Object {
         initiative: Some(12),
 
         health: Some(Health::new(48)),
-        damage: Some(Damage::new(1,6)),
+        damage: Some(Damage::new(Damage::get_default_damage())),
 
         ..Default::default()
     }
@@ -46,7 +46,7 @@ pub fn make_beast(pos: Point, depth: i32) -> Object {
         initiative: Some(8),
 
         health: Some(Health::new(6)),
-        damage: Some(Damage::new(1,3)),
+        damage: Some(Damage::new(Damage::get_default_damage())),
 
         ai: Some(AIClass::new()),
 

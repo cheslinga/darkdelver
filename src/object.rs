@@ -91,8 +91,8 @@ pub struct Damage {
     pub modifiers: Vec<i32>
 }
 impl Damage {
-    pub fn new(dice: i32, val: i32) -> Damage {
-        Damage { dice, val, modifiers: Vec::new() }
+    pub fn new(vals: (i32,i32)) -> Damage {
+        Damage { dice: vals.0, val: vals.1, modifiers: Vec::new() }
     }
     pub fn roll(&self, rng: &mut RandomNumberGenerator) -> i32 {
         let mut dmg: i32 = 0;
@@ -104,6 +104,12 @@ impl Damage {
             }
         }
         return dmg
+    }
+    pub fn get_default_damage() -> (i32,i32) {
+        //Placeholder values for now. Will make something nicer once strength stats and stuff are added.
+        let dice = 1;
+        let val = 4;
+        return (dice,val)
     }
 }
 

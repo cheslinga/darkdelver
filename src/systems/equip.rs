@@ -75,9 +75,11 @@ pub fn process_effect_modifiers(objects: &mut Vec<Object>, item_id: usize, clean
     //Negate all values if the clean flag is passed in
     if clean {
         for effect in effects.iter_mut() {
-            if let Some(params) = &mut effect.params {
-                for m in params.iter_mut() {
-                    *m = m.neg();
+            if effect.on_equip && effect.etype != EffectType::WeaponDamage {
+                if let Some(params) = &mut effect.params {
+                    for m in params.iter_mut() {
+                        *m = m.neg();
+                    }
                 }
             }
         }
@@ -87,8 +89,25 @@ pub fn process_effect_modifiers(objects: &mut Vec<Object>, item_id: usize, clean
         let actor_obj = &mut objects[owner];
         for effect in effects.iter() {
             match effect.etype {
-                EffectType::HealSelf => {}
+                EffectType::HealSelf => {
+                    if let Some(health) = &mut actor_obj.health {
+                        health.current += effect.params.as_ref().unwrap()[0];
+                    }
+                }
                 EffectType::DamageTgt => {}
+                EffectType::WeaponDamage => {
+                    if let Some(dmg) = &mut actor_obj.damage {
+                        if clean {
+                            let (dice,val) = Damage::get_default_damage();
+                            dmg.dice = dice;
+                            dmg.val = val;
+                        }
+                        else {
+                            dmg.dice = effect.params.as_ref().unwrap()[0];
+                            dmg.val = effect.params.as_ref().unwrap()[1];
+                        }
+                    }
+                }
                 EffectType::HealthUp => {
                     if let Some(health) = &mut actor_obj.health {
                         health.max += effect.params.as_ref().unwrap()[0];

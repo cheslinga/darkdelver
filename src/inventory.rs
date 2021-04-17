@@ -52,20 +52,24 @@ impl ItemUsage {
 
 #[derive(Clone,Copy,PartialEq,Serialize,Deserialize)]
 pub enum EffectType {
-    NIL, HealSelf, DamageTgt, HealthUp, AttackUp
+    NIL,
+    //Targeted effect variants
+    HealSelf, DamageTgt,
+    //On Equip variants
+    WeaponDamage, AttackUp, HealthUp
 }
 
 #[derive(Clone,Serialize,Deserialize)]
 pub struct ItemEffect {
-    pub name: String,
     pub etype: EffectType,
-    pub params: Option<Vec<i32>>
+    pub params: Option<Vec<i32>>,
+    pub on_equip: bool
 }
 impl ItemEffect {
     pub fn nil() -> ItemEffect { ItemEffect::default() }
 }
 impl Default for ItemEffect {
-    fn default() -> Self { ItemEffect { name: format!(""), etype: EffectType::NIL, params: None } }
+    fn default() -> Self { ItemEffect { etype: EffectType::NIL, params: None, on_equip: false } }
 }
 
 
