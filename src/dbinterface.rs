@@ -28,22 +28,22 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
 
     for item in command.query_map(params![], |row| {
         Ok(ExportedObject {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            render_glyph: row.get(8)?,
-            render_fg: (row.get(9)?, row.get(10)?, row.get(11)?),
-            render_bg: (row.get(12)?, row.get(13)?, row.get(14)?),
+            id: row.get("id")?,
+            name: row.get("name")?,
+            render_glyph: row.get("glyph")?,
+            render_fg: (row.get("fg_r")?, row.get("fg_g")?, row.get("fg_b")?),
+            render_bg: (row.get("bg_r")?, row.get("bg_g")?, row.get("bg_b")?),
             item_stats: {
                 let mut stats = ItemStats::blank_with_drop();
 
-                if row.get_raw_checked(16)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Activate, ItemEffect::nil()) }
-                if row.get_raw_checked(17)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Drink, ItemEffect::nil()) }
-                if row.get_raw_checked(18)? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Equip, ItemEffect::nil()) }
+                if row.get_raw_checked("activation_id")? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Activate, ItemEffect::nil()) }
+                if row.get_raw_checked("drink_id")? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Drink, ItemEffect::nil()) }
+                if row.get_raw_checked("equip_id")? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Equip, ItemEffect::nil()) }
 
                 if stats.usages.is_empty() { None }
                 else { Some(stats) }
             },
-            equip_slot: EquipSlot::match_db_string(row.get(6).unwrap_or(format!("NIL")))
+            equip_slot: EquipSlot::match_db_string(row.get("item_slot").unwrap_or(format!("NIL")))
         })
     }).ok()? {
         if let Ok(exp) = item {
