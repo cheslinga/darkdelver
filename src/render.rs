@@ -101,6 +101,18 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
         let health = player.health.as_ref().unwrap().current;
         let max = player.health.as_ref().unwrap().max;
 
+        let dmg_string = {
+            let mut s = format!("{}d{}", player.damage.as_ref().unwrap().dice, player.damage.as_ref().unwrap().val);
+            if !player.damage.as_ref().unwrap().modifiers.is_empty() {
+                let mut total = 0;
+                for i in player.damage.as_ref().unwrap().modifiers.iter() {
+                    total += i;
+                }
+                s.push_str(format!(" + {}", total).as_str());
+            }
+            s
+        };
+
         let percent = ((health as f32 / max as f32) * 100.0).round() as i32;
         let colors = if percent <= 25 { ColorPair::new(BLACK, RED) }
                         else if percent <= 50 { ColorPair::new(RED, BLACK) }
@@ -108,6 +120,8 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
                         else { ColorPair::new(WHITE, BLACK) };
         textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 2), "Health:");
         textbatch.print_color(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 3), format!("{}/{}", health, max), colors);
+        textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 5), "Damage:");
+        textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 6), dmg_string);
     }
 
     //Draw the log box
