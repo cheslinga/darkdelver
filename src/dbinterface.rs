@@ -4,6 +4,10 @@ use rusqlite::types::ValueRef;
 
 const DB_FILEPATH: &str = "res/dd_raw.sqlite";
 
+pub trait SqlStringImport {
+    fn match_db_string(db_string: String) -> Option<Self> where Self: Sized;
+}
+
 struct ExportedObject {
     id: u32,
     name: String,
@@ -20,13 +24,13 @@ pub fn open_connection() -> Connection {
 
 pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
     let mut objs: Vec<Object> = Vec::new();
-    let mut command = conn.prepare(
+    let mut main_q = conn.prepare(
         "SELECT * FROM Items T1
             INNER JOIN Renders T2 on T1.render_id = T2.id
             INNER JOIN Interactions T3 on T1.interactions_id = T3.id"
     ).unwrap();
 
-    for item in command.query_map(params![], |row| {
+    for item in main_q.query_map(params![], |row| {
         Ok(ExportedObject {
             id: row.get("id")?,
             name: row.get("name")?,
@@ -36,12 +40,35 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
             item_stats: {
                 let mut stats = ItemStats::blank_with_drop();
 
-                if row.get_raw_checked("activation_id")? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Activate, ItemEffect::nil()) }
-                if row.get_raw_checked("drink_id")? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Drink, ItemEffect::nil()) }
-                if row.get_raw_checked("equip_id")? != ValueRef::Null { import_item_functions(&mut stats, ItemUsage::Equip, ItemEffect::nil()) }
+                if row.get_raw_checked("activation_id")? != ValueRef::Null {
+                    import_item_functions(&mut stats, ItemUsage::Activate, vec![ItemEffect::nil()]) }
 
-                if stats.usages.is_empty() { None }
-                else { Some(stats) }
+                if row.get_raw_checked("drink_id")? != ValueRef::Null {
+                    import_item_functions(&mut stats, ItemUsage::Drink, vec![ItemEffect::nil()]) }
+
+                if row.get_raw_checked("equip_id")? != ValueRef::Null {
+                    let mut equip_q = conn.prepare(
+                        format!("SELECT * FROM EquipEffects WHERE id = {}", row.get("equip_id").unwrap_or(0)).as_str()
+                    ).unwrap();
+                    let effect_ids = get_effect_ids(&mut equip_q, 8).unwrap_or(vec![]);
+                    let id_string = {
+                        let mut s = String::new();
+                        for id in effect_ids.into_iter() {
+                            s.push_str(format!("{},", id).as_str());
+                        }
+                        s.pop();
+                        s
+                    };
+
+                    let mut effects_q = conn.prepare(
+                        format!("SELECT * FROM EffectTable WHERE id IN ({})", id_string).as_str()
+                    ).unwrap();
+                    let item_effects = get_effects(&mut effects_q).unwrap_or(vec![ItemEffect::nil()]);
+
+                    import_item_functions(&mut stats, ItemUsage::Equip, item_effects)
+                }
+
+                Some(stats)
             },
             equip_slot: EquipSlot::match_db_string(row.get("item_slot").unwrap_or(format!("NIL")))
         })
@@ -67,7 +94,60 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
     return Some(objs)
 }
 
-fn import_item_functions(stats: &mut ItemStats, usage_val: ItemUsage, effect_val: ItemEffect) {
+fn import_item_functions(stats: &mut ItemStats, usage_val: ItemUsage, mut effect_vals: Vec<ItemEffect>) {
     stats.usages.push(usage_val);
-    stats.effects.push(effect_val);
+    stats.effects.append(&mut effect_vals);
+}
+
+fn get_effect_ids(query: &mut Statement, max_effects: i32) -> Option<Vec<i32>> {
+    let mut id_vec = Vec::new();
+    for item in query.query_map(params![], |row| {
+        Ok({
+            id_vec.push(row.get("effect1_id").unwrap_or(0));
+
+            for i in 2..=max_effects {
+                if row.get_raw_checked(format!("effect{}_id", i).as_str())? != ValueRef::Null {
+                    id_vec.push(row.get(format!("effect{}_id", i).as_str()).unwrap_or(0)); }
+            }
+            })
+    }).ok()? {
+        return Some(id_vec)
+    }
+    None
+}
+
+fn get_effects(query: &mut Statement) -> Option<Vec<ItemEffect>> {
+    let mut effects = Vec::new();
+    for item in query.query_map(params![], |row| {
+        Ok({
+            let etype = EffectType::match_db_string(
+                row.get("effect").unwrap_or("NIL".to_string())
+            ).unwrap_or(EffectType::NIL);
+
+            effects.push(
+                ItemEffect {
+                    //Assign the effect type
+                    etype,
+                    //Assign the parameter values
+                    params: {
+                        let mut param_vec = Vec::new();
+                        for i in 1..=16 {
+                            if row.get_raw_checked(format!("param{}", i).as_str())? != ValueRef::Null {
+                                param_vec.push(row.get(format!("param{}", i).as_str()).unwrap_or(0));
+                            }
+                        }
+                        if !param_vec.is_empty() { Some(param_vec) } else { None }
+                    },
+                    //Determine whether the effect takes place on equip
+                    on_equip: match etype {
+                        EffectType::WeaponDamage => true,
+                        _ => false
+                    }
+                }
+            );
+        })
+    }).ok()? {
+        return Some(effects)
+    }
+    None
 }

@@ -142,7 +142,9 @@ impl EquipSlot {
             all_slots
         }
     }
-    pub fn match_db_string(db_string: String) -> Option<EquipSlot> {
+}
+impl SqlStringImport for EquipSlot {
+    fn match_db_string(db_string: String) -> Option<EquipSlot> {
         match db_string.as_str() {
             "MainHand" => Some(EquipSlot::MainHand),
             "OffHand" => Some(EquipSlot::OffHand),

@@ -58,7 +58,18 @@ pub enum EffectType {
     //On Equip variants
     WeaponDamage, AttackUp, HealthUp
 }
-
+impl SqlStringImport for EffectType {
+    fn match_db_string(db_string: String) -> Option<EffectType> {
+        match db_string.as_str() {
+            "WeaponDmg" => Some(EffectType::WeaponDamage),
+            "HealSelf" => Some(EffectType::HealSelf),
+            "DamageTgt" => Some(EffectType::DamageTgt),
+            "AttackUp" => Some(EffectType::AttackUp),
+            "HealthUp" => Some(EffectType::HealthUp),
+            _ => None
+        }
+    }
+}
 #[derive(Clone,Serialize,Deserialize)]
 pub struct ItemEffect {
     pub etype: EffectType,
