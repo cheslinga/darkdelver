@@ -132,15 +132,10 @@ pub enum EquipSlot {
 }
 impl EquipSlot {
     pub fn get_all_slots() -> HashSet<EquipSlot> {
-        return {
-            let mut all_slots: HashSet<EquipSlot> = HashSet::new();
-            for s in [EquipSlot::Arms, EquipSlot::Body, EquipSlot::Feet, EquipSlot::Head, EquipSlot::Legs, EquipSlot::OffHand, EquipSlot::MainHand,
-                      EquipSlot::TwoHand, EquipSlot::AnyHand, EquipSlot::Ring1, EquipSlot::Ring2].iter()
-            {
-                all_slots.insert(*s);
-            }
-            all_slots
-        }
+        return [EquipSlot::Arms, EquipSlot::Body, EquipSlot::Feet, EquipSlot::Head,
+                EquipSlot::Legs, EquipSlot::OffHand, EquipSlot::MainHand, EquipSlot::TwoHand,
+                EquipSlot::AnyHand, EquipSlot::Ring1, EquipSlot::Ring2]
+            .iter().cloned().collect()
     }
 }
 impl SqlStringImport for EquipSlot {
