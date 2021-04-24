@@ -82,6 +82,18 @@ impl Health {
     pub fn new(max: i32) -> Health {
         Health { max, current: max, wounds: Vec::new() }
     }
+    pub fn heal(&mut self, amt: i32) -> i32 {
+        let amt_healed;
+        if self.current + amt > self.max {
+            amt_healed = self.max - self.current;
+            self.current = self.max;
+        }
+        else {
+            amt_healed = amt;
+            self.current += amt;
+        }
+        return amt_healed
+    }
 }
 
 #[derive(Serialize, Deserialize)]

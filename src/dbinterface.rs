@@ -41,31 +41,13 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
                 let mut stats = ItemStats::blank_with_drop();
 
                 if row.get_raw_checked("activation_id")? != ValueRef::Null {
-                    import_item_functions(&mut stats, ItemUsage::Activate, vec![ItemEffect::nil()]) }
-
+                    import_item_functions(&mut stats, ItemUsage::Activate, import_effects(conn, row, ItemUsage::Activate, 8))
+                }
                 if row.get_raw_checked("drink_id")? != ValueRef::Null {
-                    import_item_functions(&mut stats, ItemUsage::Drink, vec![ItemEffect::nil()]) }
-
+                    import_item_functions(&mut stats, ItemUsage::Drink, import_effects(conn, row, ItemUsage::Drink, 8))
+                }
                 if row.get_raw_checked("equip_id")? != ValueRef::Null {
-                    let mut equip_q = conn.prepare(
-                        format!("SELECT * FROM EquipEffects WHERE id = {}", row.get("equip_id").unwrap_or(0)).as_str()
-                    ).unwrap();
-                    let effect_ids = get_effect_ids(&mut equip_q, 8).unwrap_or(vec![]);
-                    let id_string = {
-                        let mut s = String::new();
-                        for id in effect_ids.into_iter() {
-                            s.push_str(format!("{},", id).as_str());
-                        }
-                        s.pop();
-                        s
-                    };
-
-                    let mut effects_q = conn.prepare(
-                        format!("SELECT * FROM EffectTable WHERE id IN ({})", id_string).as_str()
-                    ).unwrap();
-                    let item_effects = get_effects(&mut effects_q).unwrap_or(vec![ItemEffect::nil()]);
-
-                    import_item_functions(&mut stats, ItemUsage::Equip, item_effects)
+                    import_item_functions(&mut stats, ItemUsage::Equip, import_effects(conn, row, ItemUsage::Equip, 8))
                 }
 
                 Some(stats)
@@ -92,6 +74,38 @@ pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
         }
     }
     return Some(objs)
+}
+
+fn import_effects(conn: &Connection, row: &Row, usage: ItemUsage, max_effects: i32) -> Vec<ItemEffect> {
+    let (table, row_key) = match usage {
+        ItemUsage::Equip => ("EquipEffects", "equip_id"),
+        ItemUsage::Drink => ("DrinkEffects", "drink_id"),
+        ItemUsage::Activate => ("ActivationEffects", "activation_id"),
+        _ => ("", "")
+    };
+    if table == "" { return vec![ItemEffect::nil()] }
+
+    let mut main_q = conn.prepare(
+        format!("SELECT * FROM {} WHERE id = {}", table, row.get(row_key).unwrap_or(0)).as_str()
+    ).unwrap();
+
+    let effect_ids = get_effect_ids(&mut main_q, max_effects).unwrap_or(vec![]);
+    let id_string = make_id_string(&effect_ids);
+    let mut effects_q = prep_effect_query(conn, id_string);
+
+    return get_effects(&mut effects_q).unwrap_or(vec![ItemEffect::nil()])
+}
+
+fn make_id_string(ids: &Vec<i32>) -> String {
+    //Builds up a list of ID integers in string format
+    let mut s = String::new();
+    for id in ids.into_iter() { s.push_str(format!("{},", id).as_str()); }
+    s.pop();
+    s
+}
+
+fn prep_effect_query(conn: &Connection, id_list: String) -> Statement {
+    conn.prepare(format!("SELECT * FROM EffectTable WHERE id IN ({})", id_list).as_str()).unwrap()
 }
 
 fn import_item_functions(stats: &mut ItemStats, usage_val: ItemUsage, mut effect_vals: Vec<ItemEffect>) {
