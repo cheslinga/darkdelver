@@ -22,13 +22,9 @@ pub fn open_connection() -> Connection {
     return Connection::open(DB_FILEPATH).expect("Connection to SQLite DB could not be opened. Please check the 'res/' folder for the file 'dd_raw.sqlite'.")
 }
 
-pub fn import_items_to_objects(conn: &Connection) -> Option<Vec<Object>> {
+pub fn import_items_to_objects(conn: &Connection, view: String) -> Option<Vec<Object>> {
     let mut objs: Vec<Object> = Vec::new();
-    let mut main_q = conn.prepare(
-        "SELECT * FROM Items T1
-            INNER JOIN Renders T2 on T1.render_id = T2.id
-            INNER JOIN Interactions T3 on T1.interactions_id = T3.id"
-    ).unwrap();
+    let mut main_q = conn.prepare(format!("SELECT * FROM {}", view).as_str()).unwrap();
 
     for item in main_q.query_map(params![], |row| {
         Ok(ExportedObject {
