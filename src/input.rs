@@ -86,6 +86,9 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
                     );
                 }
             },
+            VirtualKeyCode::Equals => {
+                test_give_potion(gs)
+            },
             */
 
             _ => {}
@@ -290,4 +293,12 @@ fn try_go_downstairs(gs: &mut State) -> bool {
         );
         return false
     }
+}
+
+fn test_give_potion(gs: &mut State) {
+    give_items(&mut gs.world.objects, 0, vec![2]);
+    console::log("Giving the player a Potion!");
+    gs.refresh_con = true;
+    gs.proc = true;
+    gs.passed = true;
 }

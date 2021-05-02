@@ -22,9 +22,19 @@ pub fn open_connection() -> Connection {
     return Connection::open(DB_FILEPATH).expect("Connection to SQLite DB could not be opened. Please check the 'res/' folder for the file 'dd_raw.sqlite'.")
 }
 
-pub fn import_items_to_objects(conn: &Connection, view: String) -> Option<Vec<Object>> {
+pub fn import_items_to_objects(conn: &Connection, table: String, where_args: Option<String>) -> Option<Vec<Object>> {
     let mut objs: Vec<Object> = Vec::new();
-    let mut main_q = conn.prepare(format!("SELECT * FROM {}", view).as_str()).unwrap();
+
+    let mut main_q = {
+        let query_str = {
+            let mut wrk = format!("SELECT * FROM {}", table);
+            if let Some(args) = where_args {
+                wrk = format!("{} WHERE {}", wrk.clone(), args)
+            }
+            wrk
+        };
+        conn.prepare(query_str.as_str()).expect(format!("Failed to execute query '{}' against SQLite database.", query_str).as_str())
+    };
 
     for item in main_q.query_map(params![], |row| {
         Ok(ExportedObject {
@@ -69,6 +79,7 @@ pub fn import_items_to_objects(conn: &Connection, view: String) -> Option<Vec<Ob
             objs.push(obj);
         }
     }
+
     return Some(objs)
 }
 
