@@ -11,38 +11,90 @@ pub trait SqlStringImport {
 struct ExportedObject {
     id: u32,
     name: String,
-    render_glyph: u8,
+    render_glyph: u16,
+    render_order: u8,
     render_fg: (u8,u8,u8),
     render_bg: (u8,u8,u8),
+    health: Option<i32>,
+    damage: Option<(i32, i32)>,
     item_stats: Option<ItemStats>,
-    equip_slot: Option<EquipSlot>
+    equip_slot: Option<EquipSlot>,
+    view_range: Option<i32>,
+    initiative: Option<u8>
 }
 
 pub fn open_connection() -> Connection {
     return Connection::open(DB_FILEPATH).expect("Connection to SQLite DB could not be opened. Please check the 'res/' folder for the file 'dd_raw.sqlite'.")
 }
 
+pub fn import_enemies_to_objects(conn: &Connection, table: String, where_args: Option<String>) -> Option<Vec<Object>> {
+    let mut objs: Vec<Object> = Vec::new();
+
+    let mut main_q = build_initial_query(conn, table, where_args);
+
+    for enemy in main_q.query_map(params![], |row| {
+        Ok(ExportedObject{
+            id: row.get("id")?,
+            name: row.get("name")?,
+            render_glyph: row.get("glyph")?,
+            render_order: row.get("render_order")?,
+            render_fg: (row.get("fg_r")?, row.get("fg_g")?, row.get("fg_b")?),
+            render_bg: (row.get("bg_r")?, row.get("bg_g")?, row.get("bg_b")?),
+            health: Some(row.get("health")?),
+            damage: Some((row.get("damage_dice")?, row.get("damage_sides")?)),
+            item_stats: None,
+            equip_slot: None,
+            view_range: Some(row.get("view_range")?),
+            initiative: Some(row.get("initiative")?)
+        })
+    }).ok()? {
+        if let Ok(exp) = enemy {
+            let fg = RGBA::from_u8(exp.render_fg.0, exp.render_fg.1, exp.render_fg.2, 255);
+            let bg = RGBA::from_u8(exp.render_bg.0, exp.render_bg.1, exp.render_bg.2, 255);
+
+            let obj = Object {
+                name: Some(exp.name),
+                render: Some(Render {
+                    glyph: exp.render_glyph as u16,
+                    color: ColorPair::new(fg, bg),
+                    order: exp.render_order
+                }),
+                health: Some(Health::new(exp.health.unwrap())),
+                damage: Some(Damage::new(exp.damage.unwrap())),
+
+                tag: Some(ActorTag::Enemy),
+                viewshed: Some(Viewshed {
+                    range: exp.view_range.unwrap(),
+                    visible: Vec::new(),
+                    refresh: true,
+                }),
+                block_tile: true,
+                initiative: exp.initiative,
+                ai: Some(AIClass::new()),
+                ..Default::default()
+            };
+            objs.push(obj);
+        }
+    }
+
+    return Some(objs)
+}
+
 pub fn import_items_to_objects(conn: &Connection, table: String, where_args: Option<String>) -> Option<Vec<Object>> {
     let mut objs: Vec<Object> = Vec::new();
 
-    let mut main_q = {
-        let query_str = {
-            let mut wrk = format!("SELECT * FROM {}", table);
-            if let Some(args) = where_args {
-                wrk = format!("{} WHERE {}", wrk.clone(), args)
-            }
-            wrk
-        };
-        conn.prepare(query_str.as_str()).expect(format!("Failed to execute query '{}' against SQLite database.", query_str).as_str())
-    };
+    let mut main_q = build_initial_query(conn, table, where_args);
 
     for item in main_q.query_map(params![], |row| {
         Ok(ExportedObject {
             id: row.get("id")?,
             name: row.get("name")?,
             render_glyph: row.get("glyph")?,
+            render_order: row.get("render_order")?,
             render_fg: (row.get("fg_r")?, row.get("fg_g")?, row.get("fg_b")?),
             render_bg: (row.get("bg_r")?, row.get("bg_g")?, row.get("bg_b")?),
+            health: None,
+            damage: None,
             item_stats: {
                 let mut stats = ItemStats::blank_with_drop();
 
@@ -58,7 +110,9 @@ pub fn import_items_to_objects(conn: &Connection, table: String, where_args: Opt
 
                 Some(stats)
             },
-            equip_slot: EquipSlot::match_db_string(row.get("item_slot").unwrap_or(format!("NIL")))
+            equip_slot: EquipSlot::match_db_string(row.get("item_slot").unwrap_or(format!("NIL"))),
+            view_range: None,
+            initiative: None
         })
     }).ok()? {
         if let Ok(exp) = item {
@@ -70,7 +124,7 @@ pub fn import_items_to_objects(conn: &Connection, table: String, where_args: Opt
                 render: Some(Render {
                     glyph: exp.render_glyph as u16,
                     color: ColorPair::new(fg, bg),
-                    order: 3
+                    order: exp.render_order
                 }),
                 item_stats: exp.item_stats,
                 equip_slot: exp.equip_slot,
@@ -81,6 +135,19 @@ pub fn import_items_to_objects(conn: &Connection, table: String, where_args: Opt
     }
 
     return Some(objs)
+}
+
+fn build_initial_query(conn: &Connection, table: String, where_args: Option<String>) -> Statement {
+    return {
+        let query_str = {
+            let mut wrk = format!("SELECT * FROM {}", table);
+            if let Some(args) = where_args {
+                wrk = format!("{} WHERE {}", wrk.clone(), args)
+            }
+            wrk
+        };
+        conn.prepare(query_str.as_str()).expect(format!("Failed to execute query '{}' against SQLite database.", query_str).as_str())
+    }
 }
 
 fn import_effects(conn: &Connection, row: &Row, usage: ItemUsage, max_effects: i32) -> Vec<ItemEffect> {

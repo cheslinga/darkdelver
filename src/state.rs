@@ -176,16 +176,23 @@ impl World {
             camera: Camera::new(startpos),
         };
 
+        //Spawn the player object
         let player = spawn_player(startpos);
         world.objects.insert(0, player);
 
+        //Spawn starting equipment in the player's inventory
         let start_equip: Vec<Object> = get_starting_equip();
         for item in start_equip.into_iter() {
             world.objects.push(item);
         }
 
+        //Spawn an enemy in the center of each room
+        let enemy_spawns = get_enemy_spawn_table(1);
         for room in mapgen.rooms.iter().skip(1) {
-            world.objects.push(make_beast(room.center(), 1))
+            //This is temporary code since I've only got one enemy returning through this so far.
+            let mut obj = enemy_spawns[0].clone();
+            add_positional_info(&mut obj, room.center(), 1);
+            world.objects.push(obj)
         }
 
         return world;
@@ -203,8 +210,12 @@ impl World {
         self.camera = Camera::new(mapgen.rooms[0].center());
         self.active_map = mapgen.map;
 
+        let enemy_spawns = get_enemy_spawn_table(self.depth);
         for room in mapgen.rooms.iter().skip(1) {
-            self.objects.push(make_beast(room.center(), self.depth))
+            //Same as above. Will probably make a function out of it later when I have more enemies made :P
+            let mut obj = enemy_spawns[0].clone();
+            add_positional_info(&mut obj, room.center(), self.depth);
+            self.objects.push(obj)
         }
 
         //Clean up any objects that are 2 floors above, but are not in any inventory

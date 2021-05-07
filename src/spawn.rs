@@ -69,6 +69,24 @@ pub fn make_corpse(pos: Point, floor: i32) -> Object {
     }
 }
 
+
+pub fn add_positional_info(init_obj: &mut Object, pos: Point, depth: i32) {
+    init_obj.pos = Some(pos);
+    init_obj.floor = depth;
+}
+
+pub fn get_enemy_spawn_table(depth: i32) -> Vec<Object> {
+    let conn = open_connection();
+
+    let mut enemies = import_enemies_to_objects(&conn,
+                                            String::from("V_EnemiesFull"),
+                                            None
+    ).expect("Failed to import enemy spawn table from the database.");
+    conn.close().expect("Connection to SQLite DB failed to close.");
+
+    return enemies
+}
+
 pub fn get_starting_equip() -> Vec<Object> {
     let conn = open_connection();
     let mut items = import_items_to_objects(&conn,
