@@ -1,14 +1,14 @@
 use crate::prelude::*;
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum AIState {
     Idle,
     Chasing,
     Hunting
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct AIClass {
     pub state: AIState,
     pub target: Option<usize>,
@@ -105,5 +105,10 @@ impl HeatMap {
         } else {
             start
         }
+    }
+}
+impl Clone for HeatMap {
+    fn clone(&self) -> Self {
+        HeatMap { lifetime: self.lifetime, nodes: self.nodes.to_vec(), old_nodes: self.old_nodes.to_vec() }
     }
 }

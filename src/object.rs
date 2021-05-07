@@ -2,7 +2,7 @@ use crate::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Object {
     pub name: Option<String>,
     pub tag: Option<ActorTag>,
@@ -70,6 +70,11 @@ pub struct Viewshed {
     pub visible: Vec<Point>,
     pub refresh: bool,
 }
+impl Clone for Viewshed {
+    fn clone(&self) -> Self {
+        Viewshed { range: self.range, visible: self.visible.to_vec(), refresh: self.refresh }
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Health {
@@ -92,6 +97,11 @@ impl Health {
             self.current += amt;
         }
         return amt_healed
+    }
+}
+impl Clone for Health {
+    fn clone(&self) -> Self {
+        Health { max: self.max, current: self.current, wounds: self.wounds.to_vec() }
     }
 }
 
@@ -123,8 +133,13 @@ impl Damage {
         return (dice,val)
     }
 }
+impl Clone for Damage {
+    fn clone(&self) -> Self {
+        Damage { dice: self.dice, val: self.val, modifiers: self.modifiers.to_vec() }
+    }
+}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct PlayerMemory {
     pub seen: bool,
     pub last_pos: Option<Point>
@@ -133,7 +148,7 @@ impl Default for PlayerMemory {
     fn default() -> Self { PlayerMemory { seen: false, last_pos: None } }
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Clone)]
 pub struct InInventory {
     pub owner_id: usize
 }
