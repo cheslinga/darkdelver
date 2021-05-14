@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::collections::HashMap;
 
 pub fn spawn_player(startpos: Point) -> Object {
     Object {
@@ -75,15 +76,61 @@ pub fn add_positional_info(init_obj: &mut Object, pos: Point, depth: i32) {
     init_obj.floor = depth;
 }
 
-pub fn get_enemy_spawn_table(depth: i32) -> Vec<Object> {
+pub fn get_enemy_spawn_table(depth: i32, num_enemies: i32, rng: &mut RandomNumberGenerator) -> Vec<Object> {
+    let mut enemies: Vec<Object> = Vec::new();
+
     let conn = open_connection();
 
-    let mut enemies = import_enemies_to_objects(&conn,
-                                            String::from("V_EnemiesFull"),
-                                            None
-    ).expect("Failed to import enemy spawn table from the database.");
-    conn.close().expect("Connection to SQLite DB failed to close.");
+    //Some BS static table IDs correlated to depth
+    let table_id = match depth {
+        1|2|3 => 1,
+        _ => 2
+    };
 
+    //Builds a list of enemy IDs to spawn
+    let id_list= {
+        let mut ids = Vec::new();
+
+        let spawn_table = get_spawn_table_info(&conn, table_id).unwrap();
+        let total_weight: u32 = {
+            let mut t: u32 = 0;
+            for e in spawn_table.iter() { t += e.weight as u32 }
+            t
+        };
+
+        for i in 1..=num_enemies {
+            let mut pivot = rng.range(0, total_weight);
+            for entry in spawn_table.iter() {
+                match pivot < entry.weight as u32 {
+                    true => {
+                        ids.push(entry.enemy_id);
+                        break
+                    }
+                    false => { pivot -= entry.weight as u32 }
+                }
+            }
+        }
+        ids
+    };
+
+    //Iterate the list of IDs once, and populate a hashmap with enemy objects keyed by ID (reduces total number of DB calls)
+    let mut obj_map: HashMap<u32, Object> = HashMap::new();
+    for id in id_list.iter() {
+        if !obj_map.contains_key(id) {
+            let mut enemy_q = import_enemies_to_objects(&conn,
+                                                        String::from("V_EnemiesFull"),
+                                                        Some(format!("id = {}", id))
+            ).expect("Failed to import enemy spawn table from the database.");
+            obj_map.insert(*id, enemy_q[0].clone());
+        }
+    }
+
+    //Iterate the list again, and fill up the objects vector
+    for id in id_list.iter() {
+        enemies.push(obj_map.get(id).unwrap().clone())
+    }
+
+    conn.close().expect("Connection to SQLite DB failed to close.");
     return enemies
 }
 

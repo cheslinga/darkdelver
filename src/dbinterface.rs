@@ -8,6 +8,8 @@ pub trait SqlStringImport {
     fn match_db_string(db_string: String) -> Option<Self> where Self: Sized;
 }
 
+pub struct SpawnTableEntry { pub enemy_id: u32, pub weight: u8 }
+
 struct ExportedObject {
     id: u32,
     name: String,
@@ -25,6 +27,24 @@ struct ExportedObject {
 
 pub fn open_connection() -> Connection {
     return Connection::open(DB_FILEPATH).expect("Connection to SQLite DB could not be opened. Please check the 'res/' folder for the file 'dd_raw.sqlite'.")
+}
+
+pub fn get_spawn_table_info(conn: &Connection, spawn_table: u32) -> Option<Vec<SpawnTableEntry>> {
+    let mut entries = Vec::new();
+
+    let mut main_q = build_initial_query(conn, String::from("SpawnTables"), Some(format!("st_id = {}", spawn_table)));
+
+    for entry in main_q.query_map(params![], |row| {
+        Ok(
+            (row.get("enemy")?, row.get("spawn_weight")?)
+        )
+    }).ok()? {
+        if let Ok((enemy_id, weight)) = entry {
+            entries.push(SpawnTableEntry { enemy_id, weight });
+        }
+    }
+    //entries.sort_by(|a,b| a.weight.cmp(&b.weight));
+    return Some(entries)
 }
 
 pub fn import_enemies_to_objects(conn: &Connection, table: String, where_args: Option<String>) -> Option<Vec<Object>> {

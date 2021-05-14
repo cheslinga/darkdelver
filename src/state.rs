@@ -164,6 +164,7 @@ impl World {
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
         let mapgen = MapGenerator::random_rooms_build(60, 60, &mut rng);
+        let num_rooms = mapgen.rooms.len();
 
         let startpos = mapgen.rooms[0].center();
 
@@ -187,10 +188,10 @@ impl World {
         }
 
         //Spawn an enemy in the center of each room
-        let enemy_spawns = get_enemy_spawn_table(1);
-        for room in mapgen.rooms.iter().skip(1) {
+        let enemy_spawns = get_enemy_spawn_table(1, num_rooms as i32 - 1, &mut world.rng);
+        for (i, room) in mapgen.rooms.iter().enumerate().skip(1) {
             //This is temporary code since I've only got one enemy returning through this so far.
-            let mut obj = enemy_spawns[0].clone();
+            let mut obj = enemy_spawns[i-1].clone();
             add_positional_info(&mut obj, room.center(), 1);
             world.objects.push(obj)
         }
@@ -210,10 +211,10 @@ impl World {
         self.camera = Camera::new(mapgen.rooms[0].center());
         self.active_map = mapgen.map;
 
-        let enemy_spawns = get_enemy_spawn_table(self.depth);
-        for room in mapgen.rooms.iter().skip(1) {
+        let enemy_spawns = get_enemy_spawn_table(self.depth, mapgen.rooms.len() as i32 - 1, &mut self.rng);
+        for (i, room) in mapgen.rooms.iter().enumerate().skip(1) {
             //Same as above. Will probably make a function out of it later when I have more enemies made :P
-            let mut obj = enemy_spawns[0].clone();
+            let mut obj = enemy_spawns[i-1].clone();
             add_positional_info(&mut obj, room.center(), self.depth);
             self.objects.push(obj)
         }
