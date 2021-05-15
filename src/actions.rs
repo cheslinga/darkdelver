@@ -12,6 +12,7 @@ impl Object {
                 if let Object { viewshed: Some(view), .. } = self {
                     view.refresh = true
                 }
+                if let Object { health: Some(health), .. } = self { health.set_regen_valid(false); }
             }
         }
         else {
@@ -22,6 +23,7 @@ impl Object {
     //Attempts to attack another entity
     pub fn try_attack(&mut self, target: &mut Object, rng: &mut RandomNumberGenerator) {
         if let Object { damage: Some(dmg), .. } = self {
+            if let Object { health: Some(health), .. } = self { health.set_regen_valid(false); }
             if let Object { health: Some(tgt_health), .. } = target {
                 //TODO: Add to-hit rolls?
                 let dmgval = dmg.roll(rng);

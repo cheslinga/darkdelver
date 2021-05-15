@@ -21,6 +21,7 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_d
                     health.current -= wound;
                     total += wound;
                 } //total
+                if total > 0 { health.reset_regen() }
                 let (name, verb) = {
                     if id == 0 {
                         (String::from("You"), String::from("take"))
@@ -67,5 +68,13 @@ pub fn proc_all_wounds(objects: &mut Vec<Object>, logs: &mut LogBuffer, player_d
         let floor = objects[*id].floor;
         objects.push(make_corpse(pos, floor));
         objects.remove(*id);
+    }
+}
+
+pub fn proc_regen(objects: &mut Vec<Object>) {
+    for obj in objects.iter_mut() {
+        if let Object { health: Some(health), .. } = obj {
+            health.check_regen()
+        }
     }
 }

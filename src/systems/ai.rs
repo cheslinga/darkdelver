@@ -58,6 +58,7 @@ fn basic_enemy_ai(enemy_id: usize, objects: &mut Vec<Object>, map: &Map, rng: &m
             } else {
                 ai.target = None;
                 ai.state = AIState::Idle;
+                if let Object { health: Some(health), .. } = enemy { health.set_regen_valid(true); }
             }
         }
         clear_ai_heatmap(enemy);

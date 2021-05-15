@@ -251,6 +251,7 @@ fn exec_all_systems(gs: &mut State) {
             gs.turn_state = TurnState::AI;
             gs.passed = false;
             process_fov(&mut gs.world.objects, &mut gs.world.active_map);
+            proc_regen(&mut gs.world.objects);
         }
 
         //Run any stuff for the AI if it's the AI's turn

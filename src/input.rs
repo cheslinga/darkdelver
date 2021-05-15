@@ -218,8 +218,11 @@ fn menu_input(gs: &mut State, con: &BTerm) {
 }
 
 fn process_action(gs: &mut State, action: Actions) {
-    let actionresult: bool = match action {
-        Actions::Wait => true,
+    let action_result: bool = match action {
+        Actions::Wait => {
+            regen_player_ok(gs);
+            true
+        },
 
         Actions::MoveLeft => try_move_player(gs, DL_LEFT),
         Actions::MoveRight => try_move_player(gs, DL_RIGHT),
@@ -237,7 +240,7 @@ fn process_action(gs: &mut State, action: Actions) {
     };
     gs.refresh_con = true;
     gs.proc = true;
-    if actionresult { gs.passed = true; }
+    if action_result { gs.passed = true; }
 }
 
 //Attempts to move the player to another tile
@@ -292,6 +295,14 @@ fn try_go_downstairs(gs: &mut State) -> bool {
             .add_part("No stairs to descend!", ColorPair::new(GREY65, GREY10))
         );
         return false
+    }
+}
+
+//Flags the player as okay to start regenerating health
+fn regen_player_ok(gs: &mut State) {
+    let player = &mut gs.world.objects[0];
+    if let Some(health) = &mut player.health {
+        health.set_regen_valid(true);
     }
 }
 

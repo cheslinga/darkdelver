@@ -80,11 +80,13 @@ impl Clone for Viewshed {
 pub struct Health {
     pub max: i32,
     pub current: i32,
-    pub wounds: Vec<i32>
+    pub wounds: Vec<i32>,
+    pub regen_valid: bool,
+    pub last_dmg_time: u8
 }
 impl Health {
     pub fn new(max: i32) -> Health {
-        Health { max, current: max, wounds: Vec::new() }
+        Health { max, current: max, wounds: Vec::new(), regen_valid: true, last_dmg_time: 0 }
     }
     pub fn heal(&mut self, amt: i32) -> i32 {
         let amt_healed;
@@ -98,10 +100,29 @@ impl Health {
         }
         return amt_healed
     }
+    pub fn set_regen_valid(&mut self, validity: bool) { self.regen_valid = validity }
+    pub fn reset_regen(&mut self) {
+        self.last_dmg_time = 10;
+        self.regen_valid = false;
+    }
+    pub fn check_regen(&mut self) {
+        match self.last_dmg_time == 0 {
+            true => {
+                if self.regen_valid && self.current < self.max / 2 {
+                    self.heal(1);
+                }
+            },
+            false => {
+                if self.regen_valid {
+                    self.last_dmg_time -= 1
+                }
+            }
+        }
+    }
 }
 impl Clone for Health {
     fn clone(&self) -> Self {
-        Health { max: self.max, current: self.current, wounds: self.wounds.to_vec() }
+        Health { max: self.max, current: self.current, wounds: self.wounds.to_vec(), regen_valid: self.regen_valid, last_dmg_time: self.last_dmg_time }
     }
 }
 
