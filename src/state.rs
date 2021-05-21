@@ -163,8 +163,7 @@ impl World {
     }
     pub fn new_game() -> World {
         let mut rng = RandomNumberGenerator::new();
-        let mapgen = MapGenerator::random_rooms_build(60, 60, &mut rng);
-        let num_rooms = mapgen.rooms.len();
+        let mapgen = MapGenerator::generate(GenerationMode::RandomRooms, 60, 60, 1, &mut rng);
 
         let startpos = mapgen.rooms[0].center();
 
@@ -187,12 +186,8 @@ impl World {
             world.objects.push(item);
         }
 
-        //Spawn an enemy in the center of each room
-        let enemy_spawns = get_enemy_spawn_table(1, num_rooms as i32 - 1, &mut world.rng);
-        for (i, room) in mapgen.rooms.iter().enumerate().skip(1) {
-            //This is temporary code since I've only got one enemy returning through this so far.
-            let mut obj = enemy_spawns[i-1].clone();
-            add_positional_info(&mut obj, room.center(), 1);
+        //Place all objects generated alongside the map into the game world
+        for obj in mapgen.objects.into_iter() {
             world.objects.push(obj)
         }
 
@@ -205,20 +200,20 @@ impl World {
         self.objects[0].floor = self.depth;
 
         //Set up a new map
-        let mapgen = MapGenerator::random_rooms_build(60, 60, &mut self.rng);
+        let mapgen = MapGenerator::generate(GenerationMode::RandomRooms, 60, 60, self.depth, &mut self.rng);
         self.objects[0].pos = Some(mapgen.rooms[0].center());
         self.objects[0].viewshed.as_mut().unwrap().refresh = true;
         self.camera = Camera::new(mapgen.rooms[0].center());
         self.active_map = mapgen.map;
 
-        let enemy_spawns = get_enemy_spawn_table(self.depth, mapgen.rooms.len() as i32 - 1, &mut self.rng);
-        for (i, room) in mapgen.rooms.iter().enumerate().skip(1) {
-            //Same as above. Will probably make a function out of it later when I have more enemies made :P
-            let mut obj = enemy_spawns[i-1].clone();
-            add_positional_info(&mut obj, room.center(), self.depth);
+        for obj in mapgen.objects.into_iter() {
             self.objects.push(obj)
         }
 
+        self.clean_garbage_objects();
+    }
+
+    fn clean_garbage_objects(&mut self) {
         //Clean up any objects that are 2 floors above, but are not in any inventory
         let mut removelist: Vec<usize> = Vec::new();
         for (i, obj) in self.objects.iter().enumerate() {
