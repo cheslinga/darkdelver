@@ -27,34 +27,6 @@ pub fn spawn_player(startpos: Point) -> Object {
     }
 }
 
-pub fn make_beast(pos: Point, depth: i32) -> Object {
-    Object {
-        name: Some("Bloodthirsty Beast".to_string()),
-        tag: Some(ActorTag::Enemy),
-        pos: Some(pos),
-        floor: depth,
-        render: Some(Render {
-            glyph: 98,
-            color: ColorPair::new(RED, BLACK),
-            order: 10
-        }),
-        viewshed: Some(Viewshed {
-            range: 5,
-            visible: Vec::new(),
-            refresh: true,
-        }),
-        block_tile: true,
-        initiative: Some(8),
-
-        health: Some(Health::new(6)),
-        damage: Some(Damage::new(Damage::get_default_damage())),
-
-        ai: Some(AIClass::new()),
-
-        ..Default::default()
-    }
-}
-
 pub fn make_corpse(pos: Point, floor: i32) -> Object {
     Object {
         name: Some("A Corpse".to_string()),
@@ -70,6 +42,20 @@ pub fn make_corpse(pos: Point, floor: i32) -> Object {
     }
 }
 
+
+pub fn try_find_spawnable_position(room: &Rect, blocked_points: &Vec<Point>, non_blocking_object: bool, rng: &mut RandomNumberGenerator) -> Option<Point> {
+    let points = room.point_set().iter().map(|p| *p).collect::<Vec<Point>>();
+    let unblocked_points = { let mut v = points.to_vec(); v.retain(|p| !blocked_points.contains(p)); v };
+
+    //If all of the tiles are blocked and the object is non-blocking, use any point.
+    let point_array = match unblocked_points.len() > 0 {
+        true    =>  { &unblocked_points }
+        false   =>  { if !non_blocking_object { return None } else { &points } }
+    };
+
+    let random_point = rng.range(0, point_array.len());
+    return Some(point_array[random_point])
+}
 
 pub fn add_positional_info(init_obj: &mut Object, pos: Point, depth: i32) {
     init_obj.pos = Some(pos);
@@ -132,6 +118,20 @@ pub fn get_enemy_spawn_table(depth: i32, num_enemies: i32, rng: &mut RandomNumbe
 
     conn.close().expect("Connection to SQLite DB failed to close.");
     return enemies
+}
+
+pub fn get_item_spawns(depth: i32, rng: &mut RandomNumberGenerator) -> Vec<Object> {
+    //Only test code for now. Just grabs a vec of a bunch of potions.
+    let conn = open_connection();
+    let mut items = import_items_to_objects(&conn,
+                                            String::from("V_ItemsFull"),
+                                            Some(format!("id = 2"))
+    ).expect("Failed to import starting items from the database.");
+    conn.close().expect("Connection to SQLite DB failed to close.");
+
+    for _ in 1..=4 { items.push(items[0].clone()); }
+
+    items
 }
 
 pub fn get_starting_equip() -> Vec<Object> {

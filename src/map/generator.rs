@@ -55,6 +55,7 @@ impl MapGenerator {
     //Builds a map using randomly placed rooms
     fn random_rooms_build(w: i32, h: i32, depth: i32, rng: &mut RandomNumberGenerator) -> MapGenerator {
         let mut gen = MapGenerator::init(w, h, depth, 20);
+        let mut block_list: Vec<Point> = Vec::new();
 
         //Run all the map-making procedures
         gen.fill(TileClass::Wall);
@@ -66,7 +67,6 @@ impl MapGenerator {
 
         //Place stairs as the last room's center
         let last_center = gen.map.point2d_to_index(gen.rooms[gen.rooms.len()-1].center());
-        gen.map.tiles[last_center] = TileClass::DownStair;
 
         //Start spawning enemies
         let enemy_spawns = get_enemy_spawn_table(depth, gen.rooms.len() as i32 - 1, rng);
@@ -74,7 +74,31 @@ impl MapGenerator {
             let mut obj = enemy_spawns[i-1].clone();
             //Statically assigns the position as the center of each room for now
             add_positional_info(&mut obj, room.center(), depth);
+            block_list.push(obj.pos.unwrap());
             gen.objects.push(obj)
+        }
+
+        let item_spawns = get_item_spawns(depth, rng);
+        let mut room_nums: Vec<usize> = Vec::new();
+        for item in item_spawns.iter() {
+            let mut spawn_success = false;
+            let mut item_pos = Point::zero();
+
+            while !spawn_success {
+                if room_nums.len() < 1 { room_nums = (1 as usize..gen.rooms.len()).map(|x| x).collect::<Vec<usize>>(); }
+
+                let rand_num = rng.range(0, room_nums.len());
+                let pos = try_find_spawnable_position(&gen.rooms[room_nums.remove(rand_num)],
+                                                      &block_list, item.block_tile, rng);
+
+                if let Some(p) = pos { item_pos = p; spawn_success = true }
+            }
+
+            block_list.push(item_pos);
+
+            let mut obj = item.clone();
+            add_positional_info(&mut obj, item_pos, depth);
+            gen.objects.push(obj);
         }
 
         return gen;
