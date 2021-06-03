@@ -181,8 +181,9 @@ fn sm_trigger_select(gs: &mut State) {
     let objs = &mut gs.world.objects;
     let logs = &mut gs.logs;
     let rng = &mut gs.world.rng;
+    let pass = &mut gs.passed;
 
-    sm.process_selection(objs, logs, rng);
+    sm.process_selection(objs, logs, rng, pass);
 
     inv_clear(gs);
     gs.proc = true;

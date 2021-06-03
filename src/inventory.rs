@@ -168,7 +168,7 @@ impl InventorySubMenu {
         if self.selection + 1 >= self.opts.len() { return }
         else { self.selection += 1 }
     }
-    pub fn process_selection(&mut self, objects: &mut Vec<Object>, logs: &mut LogBuffer, rng: &mut RandomNumberGenerator) {
+    pub fn process_selection(&mut self, objects: &mut Vec<Object>, logs: &mut LogBuffer, rng: &mut RandomNumberGenerator, pass_turn: &mut bool) {
         match self.opts[self.selection] {
             ItemUsage::Drop => {
                 drop_item(objects, self.info.obj_id, logs);
@@ -185,9 +185,11 @@ impl InventorySubMenu {
                 else {
                     equip_object(objects, self.info.obj_id, logs);
                 }
+                *pass_turn = true;
             }
             ItemUsage::Drink => {
                 drink_object(objects, self.info.obj_id, logs, rng);
+                *pass_turn = true;
             }
             ItemUsage::Activate => {}
         }
