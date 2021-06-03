@@ -67,6 +67,7 @@ impl MapGenerator {
 
         //Place stairs as the last room's center
         let last_center = gen.map.point2d_to_index(gen.rooms[gen.rooms.len()-1].center());
+        gen.map.tiles[last_center] = TileClass::DownStair;
 
         //Start spawning enemies
         let enemy_spawns = get_enemy_spawn_table(depth, gen.rooms.len() as i32 - 1, rng);

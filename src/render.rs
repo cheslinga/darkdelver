@@ -22,9 +22,9 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
                 let idx = map.index(x,y);
                 
                 let (glyph, colors) = match (map.visible[idx], map.revealed[idx]) {
-                    (true, _) => {get_tile_render(&map.tiles[idx])},
-                    (false, true) => {(get_tile_render(&map.tiles[idx]).0, ColorPair::new(GREY10,BLACK))},
-                    (false, false) => {(0,ColorPair::new(BLACK,BLACK))},
+                    (true, _)       =>  {get_tile_render(&map.tiles[idx])},
+                    (false, true)   =>  {(get_tile_render(&map.tiles[idx]).0, ColorPair::new(GREY10,BLACK))},
+                    (false, false)  =>  {(0,ColorPair::new(BLACK,BLACK))},
                 };
 
                 batch.set(pos - offset, colors, glyph);
@@ -118,8 +118,10 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
                         else if percent <= 50 { ColorPair::new(RED, BLACK) }
                         else if percent <= 75 { ColorPair::new(YELLOW, BLACK) }
                         else { ColorPair::new(WHITE, BLACK) };
+
         textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 2), "Health:");
         textbatch.print_color(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 3), format!("{}/{}", health, max), colors);
+
         textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 5), "Damage:");
         textbatch.print(Point::new(CONSOLE_W * 2 - UI_CUTOFF.x * 2 + 4, 6), dmg_string);
     }
@@ -140,9 +142,10 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
 //TODO: Make tuple globals for map theming.
 fn get_tile_render(tile: &TileClass) -> (FontCharType, ColorPair) {
     match tile {
-        TileClass::Floor => (46, ColorPair::new(WHITE,BLACK)),
-        TileClass::Wall => (35, ColorPair::new(BLACK,DARK_SLATE)),
-        TileClass::DownStair => (62, ColorPair::new(GREY70,GREY99)),
+        TileClass::Floor        =>  (46, ColorPair::new(WHITE,BLACK)),
+        TileClass::Wall         =>  (176, ColorPair::new(CHOCOLATE4, BLACK)),
+        TileClass::DownStair    =>  (62, ColorPair::new(GREY70,GREY99)),
+        _                       =>  (0, ColorPair::new(WHITE,BLACK))
     }
 }
 

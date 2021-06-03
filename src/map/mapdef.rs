@@ -3,24 +3,15 @@ use serde::{Deserialize, Serialize};
 use crate::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[repr(u16)]
 pub enum TileClass {
-    Wall,
-    Floor,
-    DownStair,
+    Wall = 1,
+    Floor = 2048,
+    DownStair = 4096,
 }
 impl TileClass {
-    pub fn does_collide(&self) -> bool {
-        match self {
-            Self::Wall => true,
-            _ => false,
-        }
-    }
-    pub fn does_blos(&self) -> bool {
-        match self {
-            Self::Wall => true,
-            _ => false,
-        }
-    }
+    pub fn does_collide(&self) -> bool { *self as u16 <= 2047 }
+    pub fn does_blos(&self) -> bool { *self as u16 <= 1023 }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
