@@ -84,7 +84,7 @@ pub fn get_enemy_spawn_table(depth: i32, num_enemies: i32, rng: &mut RandomNumbe
             t
         };
 
-        for i in 1..=num_enemies {
+        for _ in 1..=num_enemies {
             let mut pivot = rng.range(0, total_weight);
             for entry in spawn_table.iter() {
                 match pivot < entry.weight as u32 {

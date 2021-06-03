@@ -123,11 +123,7 @@ impl InventoryMenu {
             }
         }
     }
-    pub fn process_selection(&mut self, objects: &mut Vec<Object>) {
-        //TEST STUFF:
-        //let item_ptr = &mut self.items[self.selection];
-        //let obj_ptr = &mut objects[item_ptr.obj_id];
-        //console::log(format!("Hey, you selected this item! {}", obj_ptr.name.as_ref().unwrap_or(&"No Name???".to_string())));
+    pub fn process_selection(&mut self) {
         return if self.items.len() <= 0 {}
         else { self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone())); }
     }

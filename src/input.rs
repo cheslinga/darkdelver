@@ -96,6 +96,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
     }
 }
 
+enum UpDown {Up,Down}
 fn inventory_input(gs: &mut State, con: &BTerm, submenu: bool) {
     if !submenu {
         if let Some(key) = con.key {
@@ -149,17 +150,15 @@ fn inventory_input(gs: &mut State, con: &BTerm, submenu: bool) {
 }
 fn inv_trigger_select(gs: &mut State) {
     let inv = gs.inv.as_mut().unwrap();
-    let objs = &mut gs.world.objects;
-    inv.process_selection(objs);
+    inv.process_selection();
 }
 fn inv_trigger_set_select(selection: usize, gs: &mut State) {
     let inv = gs.inv.as_mut().unwrap();
-    let objs = &mut gs.world.objects;
 
     if selection >= inv.items.len() { return }
     else { inv.selection = selection; }
 
-    inv.process_selection(objs);
+    inv.process_selection();
 }
 fn inv_move_select(gs: &mut State, updown: UpDown) {
     let inv = gs.inv.as_mut().unwrap();
@@ -188,7 +187,6 @@ fn sm_trigger_select(gs: &mut State) {
     inv_clear(gs);
     gs.proc = true;
 }
-enum UpDown {Up,Down}
 
 fn inv_clear(gs: &mut State) {
     gs.inv = None;
@@ -285,17 +283,17 @@ fn try_go_downstairs(gs: &mut State) -> bool {
     let player = &gs.world.objects[0];
 
     let pos = player.pos.unwrap();
-    if map.tiles[map.index(pos.x, pos.y)] == TileClass::DownStair {
+    return if map.tiles[map.index(pos.x, pos.y)] == TileClass::DownStair {
         gs.logs.update_logs(LogMessage::new()
             .add_part(format!("Descending to level {}...", gs.world.depth + 1), ColorPair::new(GREY13, WHITE))
         );
         gs.world.descend_to_next();
-        return true
+        true
     } else {
         gs.logs.update_logs(LogMessage::new()
             .add_part("No stairs to descend!", ColorPair::new(GREY65, GREY10))
         );
-        return false
+        false
     }
 }
 

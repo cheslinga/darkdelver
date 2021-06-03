@@ -43,10 +43,10 @@ pub mod prelude {
     pub const TXT_LAYER: usize = 1;
 
     //Constant point values used as directional indicators
-    pub const DL_LEFT: Point = Point { x: -1, y: 0 };
-    pub const DL_RIGHT: Point = Point { x: 1, y: 0 };
-    pub const DL_UP: Point = Point { x: 0, y: -1 };
-    pub const DL_DOWN: Point = Point { x: 0, y: 1 };
+    pub const DL_LEFT: Point = Point    { x: -1, y:  0 };
+    pub const DL_RIGHT: Point = Point   { x:  1, y:  0 };
+    pub const DL_UP: Point = Point      { x:  0, y: -1 };
+    pub const DL_DOWN: Point = Point    { x:  0, y:  1 };
 
     //Type alias for a vec of array indices and initiative values
     pub type InitList = Vec<(usize, u8)>;

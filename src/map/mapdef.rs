@@ -2,16 +2,17 @@ use bracket_lib::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::prelude::*;
 
-#[derive(Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Serialize, Deserialize, PartialOrd)]
 #[repr(u16)]
 pub enum TileClass {
     Wall = 1,
+    Glass = 1024,
     Floor = 2048,
     DownStair = 4096,
 }
 impl TileClass {
-    pub fn does_collide(&self) -> bool { *self as u16 <= 2047 }
-    pub fn does_blos(&self) -> bool { *self as u16 <= 1023 }
+    pub fn does_collide(&self) -> bool { *self < TileClass::Floor }
+    pub fn does_blos(&self) -> bool { *self < TileClass::Glass }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -58,11 +59,8 @@ impl Map {
 
     //Same as index, but returns a None option if the index is out of bounds
     pub fn try_index(&self, x: i32, y: i32) -> Option<usize> {
-        if !self.in_bounds(x, y) {
-            return None;
-        } else {
-            return Some(self.index(x, y));
-        }
+        return if !self.in_bounds(x, y) { None }
+        else { Some(self.index(x, y)) }
     }
     //Checks if something is within the map's boundaries
     pub fn in_bounds(&self, x: i32, y: i32) -> bool {
@@ -82,13 +80,8 @@ impl Map {
                 let idx = self.index(dest.x, dest.y);
                 return Some(idx)
             }
-            else {
-                return None
-            }
         }
-        else {
-            return None
-        }
+        return None
     }
 }
 
@@ -105,27 +98,27 @@ impl BaseMap for Map {
         self.tiles[idx].does_blos()
     }
 
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        let mut exits = SmallVec::new();
+        let location = self.point_from_idx(idx);
+
+        if let Some(idx) = self.valid_exit(location, DL_LEFT)   { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(location, DL_RIGHT)  { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(location, DL_UP)     { exits.push((idx, 1.0)) }
+        if let Some(idx) = self.valid_exit(location, DL_DOWN)   { exits.push((idx, 1.0)) }
+
+        if let Some(idx) = self.valid_exit(location, DL_UP + DL_LEFT)       { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(location, DL_DOWN + DL_LEFT)     { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(location, DL_UP + DL_RIGHT)      { exits.push((idx, 1.45)) }
+        if let Some(idx) = self.valid_exit(location, DL_DOWN + DL_RIGHT)    { exits.push((idx, 1.45)) }
+
+        return exits
+    }
+
     fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
         return DistanceAlg::Pythagoras.distance2d(
             self.point_from_idx(idx1),
             self.point_from_idx(idx2)
         )
-    }
-
-    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
-        let mut exits = SmallVec::new();
-        let location = self.point_from_idx(idx);
-
-        if let Some(idx) = self.valid_exit(location, DL_LEFT) { exits.push((idx, 1.0)) }
-        if let Some(idx) = self.valid_exit(location, DL_RIGHT) { exits.push((idx, 1.0)) }
-        if let Some(idx) = self.valid_exit(location, DL_UP) { exits.push((idx, 1.0)) }
-        if let Some(idx) = self.valid_exit(location, DL_DOWN) { exits.push((idx, 1.0)) }
-
-        if let Some(idx) = self.valid_exit(location, DL_UP + DL_LEFT) { exits.push((idx, 1.45)) }
-        if let Some(idx) = self.valid_exit(location, DL_DOWN + DL_LEFT) { exits.push((idx, 1.45)) }
-        if let Some(idx) = self.valid_exit(location, DL_UP + DL_RIGHT) { exits.push((idx, 1.45)) }
-        if let Some(idx) = self.valid_exit(location, DL_DOWN + DL_RIGHT) { exits.push((idx, 1.45)) }
-
-        return exits
     }
 }
