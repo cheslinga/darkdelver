@@ -71,35 +71,23 @@ impl MapGenerator {
 
         //Start spawning enemies
         let enemy_spawns = get_enemy_spawn_table(depth, gen.rooms.len() as i32 - 1, rng);
-        for (i, room) in gen.rooms.iter().enumerate().skip(1) {
-            let mut obj = enemy_spawns[i-1].clone();
-            //Statically assigns the position as the center of each room for now
-            add_positional_info(&mut obj, room.center(), depth);
-            block_list.push(obj.pos.unwrap());
-            gen.objects.push(obj)
+        for (i, _) in gen.rooms.iter().enumerate().skip(1) {
+            let mut obj = enemy_spawns[i - 1].clone();
+            if let Some(pos) = find_valid_spawn(&gen.rooms, &obj, &block_list, rng) {
+                add_positional_info(&mut obj, pos, depth);
+                block_list.push(obj.pos.unwrap());
+                gen.objects.push(obj)
+            }
         }
 
         let item_spawns = get_item_spawns(depth, rng);
-        let mut room_nums: Vec<usize> = Vec::new();
         for item in item_spawns.iter() {
-            let mut spawn_success = false;
-            let mut item_pos = Point::zero();
-
-            while !spawn_success {
-                if room_nums.len() < 1 { room_nums = (1 as usize..gen.rooms.len()).map(|x| x).collect::<Vec<usize>>(); }
-
-                let rand_num = rng.range(0, room_nums.len());
-                let pos = try_find_spawnable_position(&gen.rooms[room_nums.remove(rand_num)],
-                                                      &block_list, item.block_tile, rng);
-
-                if let Some(p) = pos { item_pos = p; spawn_success = true }
-            }
-
-            block_list.push(item_pos);
-
             let mut obj = item.clone();
-            add_positional_info(&mut obj, item_pos, depth);
-            gen.objects.push(obj);
+            if let Some(pos) = find_valid_spawn(&gen.rooms, &obj, &block_list, rng) {
+                add_positional_info(&mut obj, pos, depth);
+                block_list.push(pos);
+                gen.objects.push(obj);
+            }
         }
 
         return gen;
@@ -154,4 +142,24 @@ impl MapGenerator {
             }
         }
     }
+}
+
+//TODO: Add a list for proximity tolerance so that not too many of the same object spawn near each other.
+fn find_valid_spawn(rooms: &Vec<Rect>, obj: &Object, block_list: &Vec<Point>, rng: &mut RandomNumberGenerator) -> Option<Point> {
+    let mut room_nums: Vec<usize> = Vec::new();
+    let mut iter_cnt: u16 = 1024;
+
+    loop {
+        if room_nums.len() < 1 { room_nums = (1 as usize..rooms.len()).map(|x| x).collect::<Vec<usize>>(); }
+
+        let rand_num = rng.range(0, room_nums.len());
+        let pos = try_find_spawnable_position(&rooms[room_nums.remove(rand_num)],
+                                              block_list, obj.block_tile, rng);
+
+        if pos.is_some() { return pos }
+
+        iter_cnt -= 1;
+        if iter_cnt < 1 { break }
+    }
+    None
 }
