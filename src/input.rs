@@ -53,7 +53,7 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N
                 => process_action(gs, Actions::MoveDownRight),
 
-            VirtualKeyCode::Numpad5 | VirtualKeyCode::Period
+            VirtualKeyCode::Numpad5
                 => process_action(gs, Actions::Wait),
 
             VirtualKeyCode::Escape => {
@@ -65,8 +65,14 @@ fn ingame_input(gs: &mut State, con: &BTerm) {
             VirtualKeyCode::G
                 => process_action(gs, Actions::TryPickUp),
 
-            VirtualKeyCode::Slash
-                => process_action(gs, Actions::TryGoDown),
+            VirtualKeyCode::Period => {
+                if con.shift || con.alt {
+                    process_action(gs, Actions::TryGoDown)
+                }
+                else {
+                    process_action(gs, Actions::Wait)
+                }
+            }
 
             VirtualKeyCode::I => {
                 gs.inv = Some(InventoryMenu::new(&gs.world.objects));
