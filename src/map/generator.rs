@@ -69,23 +69,32 @@ impl MapGenerator {
         let last_center = gen.map.point2d_to_index(gen.rooms[gen.rooms.len()-1].center());
         gen.map.tiles[last_center] = TileClass::DownStair;
 
+        //Add vectors to track object positions for proximity calculation and room usage for even spawning
+        let mut proximity_list: Vec<Point> = Vec::new();
+        let mut room_nums: Vec<usize> = Vec::new();
         //Start spawning enemies
         let enemy_spawns = get_enemy_spawn_table(depth, gen.rooms.len() as i32 - 1, rng);
         for (i, _) in gen.rooms.iter().enumerate().skip(1) {
             let mut obj = enemy_spawns[i - 1].clone();
-            if let Some(pos) = find_valid_spawn(&gen.rooms, &obj, &block_list, rng) {
+            if let Some(pos) = find_valid_spawn(&gen.rooms, &mut room_nums, &obj, &block_list, Some(&proximity_list), rng) {
                 add_positional_info(&mut obj, pos, depth);
-                block_list.push(obj.pos.unwrap());
+                block_list.push(pos);
+                proximity_list.push(pos);
                 gen.objects.push(obj)
             }
         }
 
+        //Reassign fresh vectors for proximity and room usage tracking
+        proximity_list = Vec::new();
+        room_nums = Vec::new();
+        //Start spawning items
         let item_spawns = get_item_spawns(depth, rng);
         for item in item_spawns.iter() {
             let mut obj = item.clone();
-            if let Some(pos) = find_valid_spawn(&gen.rooms, &obj, &block_list, rng) {
+            if let Some(pos) = find_valid_spawn(&gen.rooms, &mut room_nums, &obj, &block_list, Some(&proximity_list), rng) {
                 add_positional_info(&mut obj, pos, depth);
                 block_list.push(pos);
+                proximity_list.push(pos);
                 gen.objects.push(obj);
             }
         }
@@ -144,17 +153,37 @@ impl MapGenerator {
     }
 }
 
-//TODO: Add a list for proximity tolerance so that not too many of the same object spawn near each other.
-fn find_valid_spawn(rooms: &Vec<Rect>, obj: &Object, block_list: &Vec<Point>, rng: &mut RandomNumberGenerator) -> Option<Point> {
-    let mut room_nums: Vec<usize> = Vec::new();
+fn find_valid_spawn(rooms: &Vec<Rect>, room_nums: &mut Vec<usize>, obj: &Object, block_list: &Vec<Point>, proximity_list: Option<&Vec<Point>>, rng: &mut RandomNumberGenerator) -> Option<Point> {
     let mut iter_cnt: u16 = 1024;
 
+    let proximity_graph = {
+        let mut graph: Vec<Point> = Vec::new();
+
+        if let Some(list) = proximity_list {
+            for p in list.iter() {
+                graph.push(*p);
+                for i in 1..=5 {
+                    graph.append(&mut p.get_distant_neighbors(i));
+                }
+            }
+        }
+
+        graph
+    };
+
     loop {
-        if room_nums.len() < 1 { room_nums = (1 as usize..rooms.len()).map(|x| x).collect::<Vec<usize>>(); }
+        if room_nums.len() < 1 { *room_nums = (1 as usize..rooms.len()).map(|x| x).collect::<Vec<usize>>(); }
 
         let rand_num = rng.range(0, room_nums.len());
-        let pos = try_find_spawnable_position(&rooms[room_nums.remove(rand_num)],
-                                              block_list, obj.block_tile, rng);
+        let room_num = room_nums.remove(rand_num);
+        let block_graph = {
+            let mut graph: Vec<Point> = Vec::new();
+            graph.append(&mut block_list.to_vec());
+            graph.append(&mut proximity_graph.to_vec());
+            graph
+        };
+        let pos = try_find_spawnable_position(&rooms[room_num],
+                                              &block_graph, obj.block_tile, rng);
 
         if pos.is_some() { return pos }
 

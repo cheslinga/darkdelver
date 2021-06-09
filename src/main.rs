@@ -68,6 +68,7 @@ pub mod prelude {
 
     pub trait Neighbor {
         fn get_neighbors(&self) -> Vec<Point>;
+        fn get_distant_neighbors(&self, mul_factor: i32) -> Vec<Point>;
     }
     impl Neighbor for Point {
         fn get_neighbors(&self) -> Vec<Point> {
@@ -80,6 +81,18 @@ pub mod prelude {
                 *self + DL_UP + DL_RIGHT,
                 *self + DL_DOWN + DL_LEFT,
                 *self + DL_DOWN + DL_RIGHT
+            ]
+        }
+        fn get_distant_neighbors(&self, mul_factor: i32) -> Vec<Point> {
+            return vec![
+                *self + (DL_UP * mul_factor),
+                *self + (DL_DOWN * mul_factor),
+                *self + (DL_LEFT * mul_factor),
+                *self + (DL_RIGHT * mul_factor),
+                *self + (DL_UP  * mul_factor) + (DL_LEFT * mul_factor),
+                *self + (DL_UP * mul_factor) + (DL_RIGHT * mul_factor),
+                *self + (DL_DOWN * mul_factor) + (DL_LEFT * mul_factor),
+                *self + (DL_DOWN * mul_factor) + (DL_RIGHT * mul_factor)
             ]
         }
     }
