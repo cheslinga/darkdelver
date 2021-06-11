@@ -22,8 +22,8 @@ fn batch_map_draws(map: &Map, camera: &Camera) {
                 let idx = map.index(x,y);
                 
                 let (glyph, colors) = match (map.visible[idx], map.revealed[idx]) {
-                    (true, _)       =>  {get_tile_render(&map.tiles[idx])},
-                    (false, true)   =>  {(get_tile_render(&map.tiles[idx]).0, ColorPair::new(GREY10,BLACK))},
+                    (true, _)       =>  {get_tile_render(&map.tiles[idx], false)},
+                    (false, true)   =>  {get_tile_render(&map.tiles[idx], true)},
                     (false, false)  =>  {(0,ColorPair::new(BLACK,BLACK))},
                 };
 
@@ -71,7 +71,8 @@ fn batch_entity_draws(objects: &Vec<Object>, map: &Map, camera: &Camera, floor: 
         else {
             pos = obj.0.player_mem.last_pos.unwrap();
             render = obj.0.render.unwrap();
-            render.color = ColorPair::new(GREY30, BLACK);
+            render.color.fg = render.color.fg.desaturate();
+            render.color.bg = render.color.bg.desaturate();
         }
 
         batch.set(pos - offset, render.color, render.glyph);
@@ -140,15 +141,19 @@ fn batch_ui_draws(player: &Object, logs: &LogBuffer) {
 
 //Returns glyph and color pair info for a tile.
 //TODO: Make tuple globals for map theming.
-fn get_tile_render(tile: &TileClass) -> (FontCharType, ColorPair) {
-    match tile {
+fn get_tile_render(tile: &TileClass, greyscale: bool) -> (FontCharType, ColorPair) {
+    let (chr, mut color) = match tile {
         TileClass::Floor        =>  (46, ColorPair::new(WHITE,BLACK)),
         TileClass::Wall         =>  (176, ColorPair::new(CHOCOLATE4, BLACK)),
         TileClass::DownStair    =>  (62, ColorPair::new(GREY70,GREY99)),
         _                       =>  (0, ColorPair::new(WHITE,BLACK))
+    };
+    if greyscale {
+        color.fg = color.fg.desaturate() - RGBA::from_u8(100, 100, 100, 0);
+        color.bg = color.bg.desaturate() - RGBA::from_u8(100, 100, 100, 0);
     }
+    (chr, color)
 }
-
 
 /*
 //Uncomment this for heatmap visual testing because it's a pain in the ass to debug through the console
