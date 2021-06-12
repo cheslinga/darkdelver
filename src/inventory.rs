@@ -128,11 +128,13 @@ impl InventoryMenu {
         else { self.submenu = Some(InventorySubMenu::new(self.items[self.selection].clone())); }
     }
     pub fn move_selection_up(&mut self) {
-        if self.selection as i16 - 1 < 0 { return }
+        if self.items.len() <= 0 { return }
+        if self.selection as i16 - 1 < 0 { self.selection = self.items.len() - 1 }
         else { self.selection -= 1 }
     }
     pub fn move_selection_down(&mut self) {
-        if self.selection + 1 >= self.items.len() { return }
+        if self.items.len() <= 0 { return }
+        if self.selection + 1 >= self.items.len() { self.selection = 0 }
         else { self.selection += 1 }
     }
 }
@@ -157,11 +159,13 @@ impl InventorySubMenu {
     }
 
     pub fn move_selection_up(&mut self) {
-        if self.selection as i16 - 1 < 0 { return }
+        if self.opts.len() <= 0 { return }
+        if self.selection as i16 - 1 < 0 { self.selection = self.opts.len() - 1 }
         else { self.selection -= 1 }
     }
     pub fn move_selection_down(&mut self) {
-        if self.selection + 1 >= self.opts.len() { return }
+        if self.opts.len() <= 0 { return }
+        if self.selection + 1 >= self.opts.len() { self.selection = 0 }
         else { self.selection += 1 }
     }
     pub fn process_selection(&mut self, objects: &mut Vec<Object>, logs: &mut LogBuffer, rng: &mut RandomNumberGenerator, pass_turn: &mut bool) {
@@ -311,6 +315,6 @@ pub fn batch_inventory_menu(menu: &mut InventoryMenu, objects: &Vec<Object>) {
         }
     }
 
-    uibatch.submit(1100).expect("Failed to batch inventory menu draw");
+    uibatch.submit(5100).expect("Failed to batch inventory menu draw");
     textbatch.submit(16000).expect("Failed to batch inventory menu draw");
 }
